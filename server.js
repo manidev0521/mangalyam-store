@@ -291,6 +291,7 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin.html')));
 app.get('/sitemap.xml', (req, res) => res.sendFile(path.join(__dirname, 'sitemap.xml')));
 app.get('/robots.txt',  (req, res) => res.sendFile(path.join(__dirname, 'robots.txt')));
 
