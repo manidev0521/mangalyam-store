@@ -279,6 +279,22 @@ app.get('/api/orders/stats/summary', protect, adminOnly, async (req, res) => {
 });
 
 // ══════════════════════════════════════════════════════════
+// UPDATE ALL PRODUCT PRICES (one-time route)
+// ══════════════════════════════════════════════════════════
+app.get('/api/admin/update-prices', async (req, res) => {
+  try {
+    await Product.updateMany({ name: { $regex: 'Classic|Short' } }, { retailPrice: 22, wholesalePrice: 10 });
+    await Product.updateMany({ name: { $regex: 'Temple' } }, { retailPrice: 25, wholesalePrice: 13 });
+    await Product.updateMany({ name: { $regex: '10 pcs' } }, { retailPrice: 220, wholesalePrice: 100 });
+    await Product.updateMany({ name: { $regex: '50 pcs' } }, { retailPrice: 1100, wholesalePrice: 500 });
+    await Product.updateMany({ name: { $regex: '100 pcs' } }, { retailPrice: 2200, wholesalePrice: 1000 });
+    res.json({ success: true, message: '✅ All product prices updated!' });
+  } catch(err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// ══════════════════════════════════════════════════════════
 // HEALTH CHECK
 // ══════════════════════════════════════════════════════════
 app.get('/api/health', (req, res) => {
