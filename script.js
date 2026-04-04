@@ -123,7 +123,7 @@ function renderGrid(gid, list) {
   }
   g.innerHTML = list.map(p => {
     const isMulti   = p.retail > 100;
-    const retailStr = isMulti ? '₹' + p.retail.toLocaleString('en-IN') : '₹' + p.retail;
+    const retailStr = isMulti ? '₹' + p.retail.toLocaleString('en-IN') : '₹' + p.retail + '/pc';
     const wsStr     = isMulti ? '₹' + p.ws.toLocaleString('en-IN') : '₹' + p.ws;
     const stars     = '★'.repeat(Math.floor(p.rating));
     const imgSrc    = p.imgs && p.imgs[0] ? p.imgs[0] : '';
