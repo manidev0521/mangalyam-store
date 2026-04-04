@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Mangalyam Store</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Lato', sans-serif; background: #f5f0e8; color: #2c1a0e; }
+
+  /* LOGIN */
+  #loginScreen { position: fixed; inset: 0; background: #7B2D00; display: flex; align-items: center; justify-content: center; z-index: 999; }
+  .login-box { background: white; border-radius: 16px; padding: 2.5rem 2rem; width: 340px; text-align: center; }
+  .login-logo { font-size: 2rem; font-weight: 800; color: #7B2D00; margin-bottom: .3rem; }
+  .login-sub { font-size: .8rem; color: #888; margin-bottom: 1.8rem; }
+  .login-box input { width: 100%; padding: 11px 14px; border: 1.5px solid #ddd; border-radius: 8px; font-size: .9rem; margin-bottom: .8rem; outline: none; font-family: 'Lato', sans-serif; }
+  .login-box input:focus { border-color: #7B2D00; }
+  .btn-login { width: 100%; padding: 12px; background: #7B2D00; color: #FFD700; border: none; border-radius: 8px; font-size: .95rem; font-weight: 700; cursor: pointer; }
+  .login-err { color: #c0392b; font-size: .8rem; margin-top: .6rem; display: none; }
+
+  /* TOPBAR */
+  .topbar { background: #7B2D00; color: white; padding: .9rem 1.5rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+  .topbar-brand { font-size: 1.1rem; font-weight: 800; color: #FFD700; }
+  .topbar-sub { font-size: .72rem; color: #FFD98A; margin-top: 1px; }
+  .btn-logout { background: rgba(255,255,255,.15); color: white; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: .78rem; }
+
+  /* STATS */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; padding: 1.5rem; }
+  .stat-card { background: white; border-radius: 12px; padding: 1.2rem 1.5rem; border-left: 4px solid #7B2D00; }
+  .stat-val { font-size: 1.8rem; font-weight: 800; color: #7B2D00; }
+  .stat-lbl { font-size: .72rem; color: #888; text-transform: uppercase; letter-spacing: .06em; margin-top: 2px; }
+
+  /* FILTERS */
+  .filters { padding: 0 1.5rem 1rem; display: flex; gap: .6rem; flex-wrap: wrap; align-items: center; }
+  .filter-btn { padding: 7px 16px; border: 1.5px solid #ddd; border-radius: 20px; background: white; font-size: .8rem; cursor: pointer; font-family: 'Lato', sans-serif; font-weight: 700; }
+  .filter-btn.active { background: #7B2D00; color: #FFD700; border-color: #7B2D00; }
+  .search-box { padding: 7px 14px; border: 1.5px solid #ddd; border-radius: 20px; font-size: .8rem; outline: none; font-family: 'Lato', sans-serif; min-width: 200px; }
+
+  /* TABLE */
+  .table-wrap { padding: 0 1.5rem 2rem; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; }
+  thead { background: #7B2D00; color: white; }
+  th { padding: 12px 14px; text-align: left; font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; font-weight: 700; }
+  td { padding: 12px 14px; font-size: .83rem; border-bottom: 1px solid #f0ebe0; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fdf8f0; }
+
+  /* STATUS BADGE */
+  .status-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+  .s-placed { background: #fff3cd; color: #856404; }
+  .s-confirmed { background: #cce5ff; color: #004085; }
+  .s-packed { background: #d4edda; color: #155724; }
+  .s-out_for_delivery { background: #d1ecf1; color: #0c5460; }
+  .s-delivered { background: #d4edda; color: #155724; }
+
+  /* SELECT */
+  .status-select { padding: 5px 8px; border: 1.5px solid #ddd; border-radius: 6px; font-size: .78rem; font-family: 'Lato', sans-serif; background: white; cursor: pointer; outline: none; }
+
+  /* WA BTN */
+  .wa-btn { background: #25D366; color: white; border: none; padding: 5px 10px; border-radius: 6px; font-size: .72rem; cursor: pointer; font-weight: 700; white-space: nowrap; }
+  .wa-btn:hover { background: #1da855; }
+
+  /* LOADING */
+  .loading { text-align: center; padding: 3rem; color: #888; }
+  .no-orders { text-align: center; padding: 3rem; color: #888; font-size: .9rem; }
+
+  @media (max-width: 768px) {
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .filters { padding: 0 1rem 1rem; }
+    .table-wrap { padding: 0 1rem 2rem; }
+    .stats-row { padding: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">🌸 Mangalyam</div>
+    <div class="login-sub">Admin Panel · G. Anandan</div>
+    <input type="tel" id="adminPhone" placeholder="Admin Phone Number" value="9710835979">
+    <input type="password" id="adminPass" placeholder="Password" onkeydown="if(event.key==='Enter')doAdminLogin()">
+    <button class="btn-login" onclick="doAdminLogin()">Login as Admin →</button>
+    <div class="login-err" id="loginErr">தப்பான credentials!</div>
+  </div>
+</div>
+
+<!-- MAIN DASHBOARD -->
+<div id="dashboard" style="display:none">
+
+  <div class="topbar">
+    <div>
+      <div class="topbar-brand">🌸 Mangalyam Store — Admin</div>
+      <div class="topbar-sub">G. Anandan · Poonamalle, Chennai · 9710835979</div>
+    </div>
+    <button class="btn-logout" onclick="logout()">Logout</button>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-val" id="statTotal">—</div>
+      <div class="stat-lbl">Total Orders</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="statRevenue">—</div>
+      <div class="stat-lbl">Total Revenue</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="statPending">—</div>
+      <div class="stat-lbl">Pending Orders</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="statDelivered">—</div>
+      <div class="stat-lbl">Delivered</div>
+    </div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filters">
+    <button class="filter-btn active" onclick="filterOrders(this,'all')">All</button>
+    <button class="filter-btn" onclick="filterOrders(this,'placed')">Placed</button>
+    <button class="filter-btn" onclick="filterOrders(this,'confirmed')">Confirmed</button>
+    <button class="filter-btn" onclick="filterOrders(this,'packed')">Packed</button>
+    <button class="filter-btn" onclick="filterOrders(this,'out_for_delivery')">Out for Delivery</button>
+    <button class="filter-btn" onclick="filterOrders(this,'delivered')">Delivered</button>
+    <input class="search-box" type="text" id="searchBox" placeholder="🔍 Search name / phone / order ID..." oninput="renderTable()">
+    <button class="filter-btn" onclick="loadOrders()" style="margin-left:auto">🔄 Refresh</button>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-wrap">
+    <div id="tableArea" class="loading">Loading orders...</div>
+  </div>
+
+</div>
+
+<script>
+  const API = '';
+  let TOKEN = '';
+  let ALL_ORDERS = [];
+  let CURRENT_FILTER = 'all';
+
+  async function doAdminLogin() {
+    const phone = document.getElementById('adminPhone').value.trim();
+    const pass  = document.getElementById('adminPass').value;
+    try {
+      const res = await fetch(API + '/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, password: pass })
+      });
+      const data = await res.json();
+      if (res.ok && data.user.role === 'admin') {
+        TOKEN = data.token;
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        loadOrders();
+      } else {
+        document.getElementById('loginErr').style.display = 'block';
+        document.getElementById('loginErr').textContent = data.message || 'Admin access இல்லை!';
+      }
+    } catch(e) {
+      document.getElementById('loginErr').style.display = 'block';
+      document.getElementById('loginErr').textContent = 'Server connect ஆகவில்லை!';
+    }
+  }
+
+  async function apiFetch(path, opts = {}) {
+    const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN };
+    const res = await fetch(API + path, { ...opts, headers });
+    return res.json();
+  }
+
+  async function loadOrders() {
+    document.getElementById('tableArea').innerHTML = '<div class="loading">⏳ Orders load ஆகுது...</div>';
+    try {
+      const data = await apiFetch('/api/orders');
+      ALL_ORDERS = data.orders || [];
+      updateStats();
+      renderTable();
+    } catch(e) {
+      document.getElementById('tableArea').innerHTML = '<div class="no-orders">❌ Orders load ஆகவில்லை. Refresh try பண்ணுங்கள்.</div>';
+    }
+  }
+
+  function updateStats() {
+    const total     = ALL_ORDERS.length;
+    const revenue   = ALL_ORDERS.reduce((s, o) => s + (o.totalAmount || 0), 0);
+    const pending   = ALL_ORDERS.filter(o => ['placed','confirmed','packed','out_for_delivery'].includes(o.status)).length;
+    const delivered = ALL_ORDERS.filter(o => o.status === 'delivered').length;
+    document.getElementById('statTotal').textContent     = total;
+    document.getElementById('statRevenue').textContent   = '₹' + revenue.toLocaleString('en-IN');
+    document.getElementById('statPending').textContent   = pending;
+    document.getElementById('statDelivered').textContent = delivered;
+  }
+
+  function filterOrders(el, status) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    CURRENT_FILTER = status;
+    renderTable();
+  }
+
+  function renderTable() {
+    const search = document.getElementById('searchBox').value.toLowerCase();
+    let orders = ALL_ORDERS;
+
+    if (CURRENT_FILTER !== 'all') orders = orders.filter(o => o.status === CURRENT_FILTER);
+    if (search) orders = orders.filter(o =>
+      (o.orderId || '').toLowerCase().includes(search) ||
+      (o.customerName || '').toLowerCase().includes(search) ||
+      (o.phone || '').includes(search)
+    );
+
+    if (!orders.length) {
+      document.getElementById('tableArea').innerHTML = '<div class="no-orders">📭 Orders இல்லை</div>';
+      return;
+    }
+
+    const rows = orders.map(o => {
+      const date = new Date(o.createdAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+      const items = (o.items || []).map(i => `${i.productName || i.name || '—'} ×${i.qty}`).join(', ');
+      return `<tr>
+        <td><strong>${o.orderId || '—'}</strong><br><span style="font-size:.7rem;color:#888">${date}</span></td>
+        <td>${o.customerName || '—'}<br><span style="font-size:.72rem;color:#888">${o.city || ''}</span></td>
+        <td><a href="tel:${o.phone}" style="color:#7B2D00;font-weight:700;text-decoration:none">${o.phone || '—'}</a></td>
+        <td style="max-width:180px;font-size:.78rem">${items}</td>
+        <td><strong style="color:#7B2D00">₹${(o.totalAmount || 0).toLocaleString('en-IN')}</strong></td>
+        <td><span class="status-badge s-${o.status}">${statusLabel(o.status)}</span></td>
+        <td>
+          <select class="status-select" onchange="updateStatus('${o._id}', this.value)">
+            <option value="">Update →</option>
+            <option value="confirmed">✅ Confirmed</option>
+            <option value="packed">📦 Packed</option>
+            <option value="out_for_delivery">🚚 Out for Delivery</option>
+            <option value="delivered">🏠 Delivered</option>
+          </select>
+        </td>
+        <td>
+          <button class="wa-btn" onclick="waMsg('${o.phone}','${o.orderId}','${o.customerName}')">💬 WA</button>
+        </td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById('tableArea').innerHTML = `
+      <table>
+        <thead><tr>
+          <th>Order ID</th><th>Customer</th><th>Phone</th><th>Items</th><th>Amount</th><th>Status</th><th>Update</th><th>WA</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  }
+
+  function statusLabel(s) {
+    const map = { placed:'Placed', confirmed:'Confirmed', packed:'Packed', out_for_delivery:'Out for Delivery', delivered:'Delivered' };
+    return map[s] || s;
+  }
+
+  async function updateStatus(id, status) {
+    if (!status) return;
+    const msgMap = {
+      confirmed: 'G. Anandan உங்கள் order confirm பண்ணார்!',
+      packed: 'உங்கள் order pack ஆகிவிட்டது!',
+      out_for_delivery: 'உங்கள் order delivery-ல் உள்ளது!',
+      delivered: 'உங்கள் order deliver ஆகிவிட்டது! நன்றி!'
+    };
+    try {
+      await apiFetch(`/api/orders/${id}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status, message: msgMap[status] })
+      });
+      await loadOrders();
+      alert('✅ Status updated!');
+    } catch(e) {
+      alert('❌ Update failed!');
+    }
+  }
+
+  function waMsg(phone, orderId, name) {
+    const msg = `Hi ${name}, உங்கள் Mangalyam Store order (${orderId}) confirmed! G. Anandan Poonamalle, Chennai-இல் இருந்து 24 மணி நேரத்தில் dispatch பண்ணுவார். நன்றி! 🌸`;
+    window.open(`https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+  }
+
+  function logout() {
+    TOKEN = '';
+    ALL_ORDERS = [];
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('dashboard').style.display = 'none';
+  }
+</script>
+</body>
+</html>
