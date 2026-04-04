@@ -12,7 +12,7 @@
   <!-- ══ OPEN GRAPH (WhatsApp/Facebook share) ══ -->
   <meta property="og:title" content="A SMangalyam Store - Thali Kayiru | G. Anandan, Chennai">
   <meta property="og:description" content="Handmade Thali Kayiru - Retail ₹35-40 | Wholesale ₹12-15 | Natural Turmeric Dyed. Poonamalle, Chennai. Call 9710835979">
-  <meta property="og:image" content="https://mangalyamstore.onrender.com/images/product1.jpg">
+  <meta property="og:image" content="https://mangalyamstore.onrender.com/images/product1.png">
   <meta property="og:url" content="https://mangalyamstore.onrender.com/">
   <meta property="og:type" content="website">
 
@@ -58,43 +58,21 @@
 </div>
 
 <!-- NAVBAR -->
-<!-- NAVBAR -->
 <nav>
   <div class="nav-inner">
-    
-    <!-- LOGO -->
     <a href="#" class="logo" onclick="showPage('home');return false">
       <div class="logo-main">Mangalyam<em>Store</em></div>
       <div class="logo-owner">G. Anandan · Poonamalle, Chennai</div>
       <div class="logo-sub">Handmade Thali Kayiru · Since 2015</div>
     </a>
-
-    <!-- ☰ HAMBURGER -->
-    <button class="nav-toggle"
-      onclick="document.getElementById('navLinks').classList.toggle('show')">
-      ☰
-    </button>
-
-    <!-- NAV LINKS -->
+    <button class="hamburger" onclick="toggleNav()" id="hamburger"><span></span><span></span><span></span></button>
     <div class="nav-links" id="navLinks">
-      <a href="#" class="active"
-        onclick="showPage('home');document.getElementById('navLinks').classList.remove('show');return false">Home</a>
-
-      <a href="#"
-        onclick="showPage('shop');document.getElementById('navLinks').classList.remove('show');return false">Shop</a>
-
-      <a href="#"
-        onclick="showPage('pricing');document.getElementById('navLinks').classList.remove('show');return false">Pricing</a>
-
-      <a href="#"
-        onclick="showPage('about');document.getElementById('navLinks').classList.remove('show');return false">About / Contact</a>
-
-      <a href="#"
-        onclick="showPage('track');document.getElementById('navLinks').classList.remove('show');return false">Track Order</a>
+      <a href="#" class="active" onclick="showPage('home');return false">Home</a>
+      <a href="#" onclick="showPage('shop');return false">Shop</a>
+      <a href="#" onclick="showPage('pricing');return false">Pricing</a>
+      <a href="#" onclick="showPage('about');return false">About / Contact</a>
+      <a href="#" onclick="showPage('track');return false">Track Order</a>
     </div>
- 
-
-    <!-- RIGHT SIDE -->
     <div class="nav-right">
       <button class="btn-nav" onclick="openLogin()">Login</button>
       <button class="btn-nav active" onclick="openLogin('reg')">Register</button>
@@ -103,7 +81,6 @@
         <div class="cart-badge" id="cartCount">0</div>
       </div>
     </div>
-
   </div>
 </nav>
 
@@ -165,13 +142,13 @@
     </div>
     <div class="hero-img-grid">
       <div class="h-img-cell tall">
-        <img src="images/product1.jpg" alt="Thali Kayiru" onerror="this.parentElement.style.background='var(--gold3)'">
+        <img src="images/product1.png" alt="Thali Kayiru" onerror="this.parentElement.style.background='var(--gold3)'">
       </div>
       <div class="h-img-cell">
-        <img src="images/product2.jpg" alt="Bulk Pack" onerror="this.parentElement.style.background='var(--gold3)'">
+        <img src="images/product2.png" alt="Bulk Pack" onerror="this.parentElement.style.background='var(--gold3)'">
       </div>
       <div class="h-img-cell">
-        <img src="images/product3.jpg" alt="Wholesale" onerror="this.parentElement.style.background='var(--gold3)'">
+        <img src="images/product3.png" alt="Wholesale" onerror="this.parentElement.style.background='var(--gold3)'">
       </div>
     </div>
   </div>
@@ -397,10 +374,10 @@
     <div class="about-layout">
       <div>
         <div class="about-mosaic">
-          <div class="mosaic-img"><img src="images/product4.jpg" alt="Thali Kayiru" onerror="this.parentElement.style.background='var(--gold3)'"></div>
-          <div class="mosaic-img"><img src="images/product1.jpg" alt="Classic Kayiru" onerror="this.parentElement.style.background='var(--gold3)'"></div>
-          <div class="mosaic-img"><img src="images/product2.jpg" alt="Bulk Kayiru"></div>
-          <div class="mosaic-img"><img src="images/product3.jpg" alt="Wholesale Stock" onerror="this.parentElement.style.background='var(--gold3)'"></div>
+          <div class="mosaic-img"><img src="images/product4.png" alt="Thali Kayiru" onerror="this.parentElement.style.background='var(--gold3)'"></div>
+          <div class="mosaic-img"><img src="images/product1.png" alt="Classic Kayiru" onerror="this.parentElement.style.background='var(--gold3)'"></div>
+          <div class="mosaic-img"><img src="images/product2.png" alt="Bulk Kayiru"></div>
+          <div class="mosaic-img"><img src="images/product3.png" alt="Wholesale Stock" onerror="this.parentElement.style.background='var(--gold3)'"></div>
         </div>
       </div>
       <div>
@@ -591,5 +568,17 @@
 <button class="wa-float" onclick="window.open('https://wa.me/919710835979?text=Hi%20G.%20Anandan%2C%20I%20want%20to%20order%20Thali%20Kayiru','_blank')">💬</button>
 
 <script src="script.js"></script>
+<script>
+function toggleNav() {
+  const nav = document.getElementById("navLinks");
+  nav.classList.toggle("open");
+}
+// Close nav when link clicked
+document.querySelectorAll(".nav-links a").forEach(a => {
+  a.addEventListener("click", () => {
+    document.getElementById("navLinks").classList.remove("open");
+  });
+});
+</script>
 </body>
 </html>
