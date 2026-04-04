@@ -221,7 +221,7 @@ function buildMod() {
         <div class="m-price-tile retail-tile">
           <div class="m-tile-label">🛍️ Retail</div>
           <div class="m-tile-price" id="mRPrice">${pRetail}</div>
-          <div class="m-tile-sub">₹35–₹40 per piece</div>
+          <div class="m-tile-sub">₹20-₹25 per piece</div>
         </div>
         <div class="m-price-tile ws-tile">
           <div class="m-tile-label">🏭 Wholesale</div>
