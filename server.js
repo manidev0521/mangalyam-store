@@ -309,10 +309,50 @@ app.use((err, req, res, next) => {
 });
 
 // ══════════════════════════════════════════════════════════
+// AUTO SEED — Admin + Products (runs on every start, skips if exists)
+// ══════════════════════════════════════════════════════════
+async function autoSeed() {
+  try {
+    // Admin user
+    const admin = await User.findOne({ phone: '9710835979' });
+    if (!admin) {
+      await User.create({
+        name: 'G. Anandan',
+        phone: '9710835979',
+        city: 'Poonamalle, Chennai',
+        password: 'mangalyam@2025',
+        role: 'admin',
+      });
+      console.log('✅ Admin user created → 9710835979 / mangalyam@2025');
+    } else {
+      console.log('ℹ️  Admin already exists');
+    }
+
+    // Products
+    const count = await Product.countDocuments();
+    if (count === 0) {
+      await Product.insertMany([
+        { name:'Classic Manjal Thali Kayiru', tamilName:'கைவினை முறை மஞ்சள் தாலி கயிறு', brand:'Mangalyam · G. Anandan', type:'Natural Turmeric · Pure Cotton · 24 inch', categories:['all','yellow'], badge:'BESTSELLER', badgeColor:'m', emoji:'🟡', images:['/images/product1.jpg','/images/product4.jpg'], retailPrice:38, wholesalePrice:12, wholesaleMinQty:20, rating:4.9, reviewCount:521, stock:500 },
+        { name:'Bulk Bundle — 10 pcs', tamilName:'10 நூல் தொகுப்பு', brand:'Mangalyam · G. Anandan', type:'Set of 10 · Ready Dispatch · Plastic Packed', categories:['all','bulk','wholesale'], badge:'BULK', badgeColor:'g', emoji:'📦', images:['/images/product2.jpg','/images/product3.jpg'], retailPrice:370, wholesalePrice:130, wholesaleMinQty:1, rating:4.8, reviewCount:342, stock:200 },
+        { name:'Wholesale Pack — 50 pcs', tamilName:'50 நூல் மொத்த தொகுப்பு', brand:'Mangalyam · G. Anandan', type:'50 pcs · Plastic Sealed · GST Invoice', categories:['all','wholesale'], badge:'WHOLESALE', badgeColor:'m', emoji:'🏷️', images:['/images/product3.jpg','/images/product2.jpg'], retailPrice:1900, wholesalePrice:650, wholesaleMinQty:1, rating:4.9, reviewCount:187, stock:100 },
+        { name:'Temple Grade Premium Kayiru', tamilName:'கோவில் தர தாலி கயிறு', brand:'Mangalyam · G. Anandan', type:'Premium Cotton · Double Dyed · 24 inch', categories:['all','temple'], badge:'TEMPLE', badgeColor:'m', emoji:'🛕', images:['/images/product4.jpg','/images/product1.jpg'], retailPrice:40, wholesalePrice:15, wholesaleMinQty:20, rating:5.0, reviewCount:289, stock:300 },
+        { name:'Mega Pack — 100 pcs', tamilName:'100 நூல் மொத்த விலை', brand:'Mangalyam · G. Anandan', type:'100 pcs · Factory Direct · Best Rate', categories:['all','wholesale'], badge:'BEST VALUE', badgeColor:'g', emoji:'🏭', images:['/images/product5.png','/images/product3.jpg'], retailPrice:3800, wholesalePrice:1200, wholesaleMinQty:1, rating:4.8, reviewCount:94, stock:50 },
+        { name:'Short Thali Kayiru — 18 inch', tamilName:'குறுகிய தாலி கயிறு', brand:'Mangalyam · G. Anandan', type:'Compact · 18 inch · Natural Dye', categories:['all','yellow'], badge:'NEW', badgeColor:'g', emoji:'✨', images:['/images/product1.jpg','/images/product4.jpg'], retailPrice:35, wholesalePrice:12, wholesaleMinQty:20, rating:4.7, reviewCount:67, stock:400 },
+      ]);
+      console.log('✅ 6 products seeded');
+    } else {
+      console.log(`ℹ️  ${count} products already exist`);
+    }
+  } catch(err) {
+    console.error('❌ Seed error:', err.message);
+  }
+}
+
+// ══════════════════════════════════════════════════════════
 // START
 // ══════════════════════════════════════════════════════════
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log('');
   console.log('╔══════════════════════════════════════════════════╗');
   console.log('║     🌸  MANGALYAM STORE — SERVER STARTED  🌸     ║');
@@ -322,6 +362,7 @@ app.listen(PORT, () => {
   console.log(`║  📞  9710835979 | 7305775184                     ║`);
   console.log('╚══════════════════════════════════════════════════╝');
   console.log('');
+  await autoSeed();
 });
 
 module.exports = app;
