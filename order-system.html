@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A S Mangalyam — Order Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;600;700&family=Playfair+Display:wght@600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --maroon: #7B1C1C;
+    --gold: #C9922A;
+    --gold2: #E8B84B;
+    --cream: #FDF6EC;
+    --cream2: #F8EDD8;
+    --green: #2E7D32;
+    --white: #fff;
+    --border: #E0C98A;
+    --muted: #888;
+    --dark: #2C1810;
+    --red: #C62828;
+    --blue: #1565C0;
+    --shadow: 0 2px 16px rgba(123,28,28,0.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Lato', 'Noto Sans Tamil', sans-serif; background: var(--cream); color: var(--dark); min-height: 100vh; }
+
+  /* ── Header ── */
+  .header {
+    background: linear-gradient(135deg, var(--maroon) 0%, #4A0E0E 100%);
+    color: #fff;
+    padding: 0 1.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  }
+  .header-logo { font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 700; }
+  .header-logo span { color: var(--gold2); }
+  .header-sub { font-size: .7rem; color: rgba(255,255,255,.65); margin-top: 1px; }
+
+  /* ── Tabs ── */
+  .tabs { display: flex; background: var(--maroon); border-bottom: 2px solid var(--gold); }
+  .tab-btn {
+    flex: 1; padding: .75rem .5rem; border: none; background: transparent;
+    color: rgba(255,255,255,.65); font-size: .78rem; font-weight: 700; cursor: pointer;
+    letter-spacing: .04em; text-transform: uppercase; transition: all .2s;
+    border-bottom: 3px solid transparent;
+  }
+  .tab-btn.active { color: var(--gold2); border-bottom-color: var(--gold2); background: rgba(255,255,255,.05); }
+  .tab-btn.hidden { display: none; }
+
+  /* ── Main ── */
+  .main { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+
+  /* ── Section ── */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ── Order Form ── */
+  .form-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 1.2rem;
+  }
+  .form-card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem; font-weight: 700;
+    color: var(--maroon); margin-bottom: 1rem;
+    padding-bottom: .6rem; border-bottom: 1px solid var(--cream2);
+    display: flex; align-items: center; gap: .5rem;
+  }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+  @media(max-width:560px){ .form-grid { grid-template-columns: 1fr; } }
+  .fg { display: flex; flex-direction: column; gap: .3rem; }
+  .fg.full { grid-column: 1 / -1; }
+  label { font-size: .72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+  input, select, textarea {
+    padding: .65rem .85rem;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    font-size: .88rem;
+    font-family: inherit;
+    background: var(--cream);
+    color: var(--dark);
+    transition: border .2s;
+    outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--gold); background: #fff; }
+  textarea { resize: vertical; min-height: 60px; }
+
+  /* ── Product Table in Form ── */
+  .prod-table { width: 100%; border-collapse: collapse; font-size: .82rem; margin-bottom: .8rem; }
+  .prod-table th { background: var(--cream2); color: var(--maroon); font-weight: 700; padding: .5rem .6rem; text-align: left; font-size: .7rem; text-transform: uppercase; }
+  .prod-table td { padding: .45rem .6rem; border-bottom: 1px solid var(--cream2); }
+  .prod-table tr:last-child td { border-bottom: none; }
+  .prod-table input[type=number] { width: 65px; padding: .3rem .4rem; }
+  .prod-table select { padding: .3rem .4rem; font-size: .8rem; }
+  .add-row-btn {
+    background: none; border: 1.5px dashed var(--border); color: var(--gold);
+    padding: .4rem 1rem; border-radius: 5px; font-size: .78rem; cursor: pointer;
+    font-weight: 700; margin-bottom: .5rem; width: 100%;
+  }
+  .add-row-btn:hover { background: var(--cream2); }
+  .del-btn { background: none; border: none; color: var(--red); cursor: pointer; font-size: 1rem; }
+
+  /* ── Total box ── */
+  .total-box {
+    background: linear-gradient(135deg, var(--maroon) 0%, #4A0E0E 100%);
+    color: #fff; border-radius: 8px; padding: 1rem 1.2rem;
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem;
+  }
+  .total-label { font-size: .78rem; opacity: .75; }
+  .total-val { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: var(--gold2); }
+
+  /* ── Buttons ── */
+  .btn-row { display: flex; gap: .6rem; flex-wrap: wrap; }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--maroon), #9B2C2C);
+    color: #fff; border: none; padding: .7rem 1.4rem;
+    border-radius: 6px; font-weight: 700; font-size: .85rem; cursor: pointer;
+    box-shadow: 0 2px 8px rgba(123,28,28,0.25);
+  }
+  .btn-wa {
+    background: #25D366; color: #fff; border: none; padding: .7rem 1.4rem;
+    border-radius: 6px; font-weight: 700; font-size: .85rem; cursor: pointer;
+  }
+  .btn-excel {
+    background: #1D6F42; color: #fff; border: none; padding: .7rem 1.4rem;
+    border-radius: 6px; font-weight: 700; font-size: .85rem; cursor: pointer;
+  }
+  .btn-gold {
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: var(--dark); border: none; padding: .7rem 1.4rem;
+    border-radius: 6px; font-weight: 700; font-size: .85rem; cursor: pointer;
+  }
+
+  /* ── Admin Dashboard ── */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: .8rem; margin-bottom: 1.4rem; }
+  @media(max-width:600px){ .stats-row { grid-template-columns: 1fr 1fr; } }
+  .stat-card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1rem; text-align: center;
+    box-shadow: var(--shadow);
+  }
+  .stat-val { font-family: 'Playfair Display', serif; font-size: 1.7rem; font-weight: 700; color: var(--maroon); }
+  .stat-lbl { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-top: 2px; }
+
+  /* ── Orders Table ── */
+  .orders-wrap { background: var(--white); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); }
+  .orders-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1rem 1.2rem; border-bottom: 1px solid var(--cream2);
+    background: var(--cream);
+  }
+  .orders-title { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 700; color: var(--maroon); }
+  .search-input { padding: .45rem .8rem; border: 1.5px solid var(--border); border-radius: 20px; font-size: .8rem; outline: none; width: 180px; background: var(--white); }
+  .orders-table { width: 100%; border-collapse: collapse; font-size: .78rem; }
+  .orders-table th { background: var(--cream2); padding: .6rem .8rem; text-align: left; font-size: .68rem; text-transform: uppercase; color: var(--maroon); font-weight: 700; }
+  .orders-table td { padding: .6rem .8rem; border-bottom: 1px solid var(--cream2); vertical-align: middle; }
+  .orders-table tr:last-child td { border-bottom: none; }
+  .orders-table tr:hover td { background: var(--cream); }
+  .status-badge {
+    display: inline-block; padding: .18rem .55rem; border-radius: 20px;
+    font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+  }
+  .s-placed    { background: #FFF9C4; color: #F57F17; }
+  .s-confirmed { background: #E3F2FD; color: #1565C0; }
+  .s-packed    { background: #F3E5F5; color: #6A1B9A; }
+  .s-delivery  { background: #E8F5E9; color: #2E7D32; }
+  .s-delivered { background: #C8E6C9; color: #1B5E20; }
+  .action-btn {
+    padding: .25rem .55rem; border-radius: 4px; font-size: .7rem; font-weight: 700;
+    cursor: pointer; border: none; margin-right: 3px;
+  }
+  .ab-view  { background: var(--cream2); color: var(--maroon); }
+  .ab-wa    { background: #25D366; color: #fff; }
+  .ab-del   { background: var(--red); color: #fff; }
+
+  /* ── WhatsApp Preview ── */
+  .wa-preview {
+    background: #ECE5DD;
+    border-radius: 12px;
+    padding: 1.2rem;
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: .85rem;
+    line-height: 1.7;
+    min-height: 200px;
+    position: relative;
+  }
+  .wa-bubble {
+    background: #DCF8C6;
+    border-radius: 8px 8px 8px 2px;
+    padding: .8rem 1rem;
+    display: inline-block;
+    max-width: 85%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    white-space: pre-wrap;
+    font-size: .82rem;
+    color: #111;
+    word-break: break-word;
+  }
+  .wa-time { font-size: .65rem; color: var(--muted); text-align: right; margin-top: .3rem; }
+
+  /* ── Order Detail Modal ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.5); z-index: 999;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: var(--white); border-radius: 14px;
+    padding: 1.5rem; max-width: 500px; width: 95%;
+    max-height: 90vh; overflow-y: auto;
+    box-shadow: 0 8px 40px rgba(0,0,0,.25);
+  }
+  .modal-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--maroon); margin-bottom: 1rem; }
+  .detail-row { display: flex; justify-content: space-between; padding: .45rem 0; border-bottom: 1px solid var(--cream2); font-size: .83rem; }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-key { color: var(--muted); font-weight: 700; font-size: .75rem; text-transform: uppercase; }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+    background: var(--dark); color: #fff; padding: .6rem 1.3rem;
+    border-radius: 20px; font-size: .82rem; font-weight: 700;
+    opacity: 0; transition: opacity .3s; z-index: 9999; pointer-events: none;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; }
+
+  /* ── Empty state ── */
+  .empty { text-align: center; padding: 3rem; color: var(--muted); font-size: .85rem; }
+  .empty-ico { font-size: 2.5rem; margin-bottom: .5rem; }
+
+  /* ── Filter row ── */
+  .filter-row { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .filter-btn { padding: .35rem .85rem; border: 1.5px solid var(--border); border-radius: 20px; background: var(--white); font-size: .72rem; font-weight: 700; cursor: pointer; color: var(--muted); }
+  .filter-btn.active { background: var(--maroon); color: #fff; border-color: var(--maroon); }
+
+  .section-title { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: var(--maroon); margin-bottom: 1.2rem; }
+
+  /* ── Confirmation Page ── */
+  .confirm-wrap { max-width: 600px; margin: 0 auto; }
+  .confirm-success-banner {
+    background: linear-gradient(135deg, #1B5E20, #2E7D32);
+    color: #fff; border-radius: 14px; padding: 2rem 1.5rem; text-align: center;
+    margin-bottom: 1.5rem; box-shadow: 0 4px 20px rgba(46,125,50,0.3);
+  }
+  .confirm-tick { font-size: 3.5rem; margin-bottom: .5rem; }
+  .confirm-title { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; margin-bottom: .3rem; }
+  .confirm-subtitle { font-size: .85rem; opacity: .85; }
+  .confirm-order-id {
+    display: inline-block; background: rgba(255,255,255,.2);
+    padding: .35rem 1.2rem; border-radius: 20px; font-weight: 700;
+    font-size: 1rem; margin-top: .8rem; letter-spacing: .06em;
+  }
+  .confirm-card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.2rem 1.4rem; margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+  }
+  .confirm-card-title {
+    font-family: 'Playfair Display', serif; font-size: .95rem;
+    color: var(--maroon); font-weight: 700; margin-bottom: 1rem;
+    padding-bottom: .5rem; border-bottom: 1px solid var(--cream2);
+    display: flex; align-items: center; gap: .5rem;
+  }
+  .confirm-detail-row {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    padding: .45rem 0; border-bottom: 1px solid var(--cream2); font-size: .84rem;
+  }
+  .confirm-detail-row:last-child { border-bottom: none; }
+  .confirm-detail-key { color: var(--muted); font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; flex: 0 0 110px; }
+  .confirm-detail-val { font-weight: 600; color: var(--dark); text-align: right; }
+  .confirm-items-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+  .confirm-items-table th { background: var(--cream2); color: var(--maroon); padding: .45rem .6rem; font-size: .7rem; text-transform: uppercase; font-weight: 700; text-align: left; }
+  .confirm-items-table td { padding: .5rem .6rem; border-bottom: 1px solid var(--cream2); }
+  .confirm-items-table tr:last-child td { border-bottom: none; }
+  .confirm-total-row { background: var(--cream2); }
+  .confirm-total-row td { font-weight: 700; color: var(--maroon); font-size: .9rem; }
+  .confirm-actions { display: flex; gap: .7rem; flex-wrap: wrap; margin-top: .5rem; }
+  .confirm-actions button { flex: 1; min-width: 140px; }
+  .confirm-badge-free { background: #E8F5E9; color: #2E7D32; padding: .15rem .55rem; border-radius: 10px; font-size: .72rem; font-weight: 700; }
+  .confirm-timeline { display: flex; gap: 0; margin: .5rem 0; }
+  .ct-step { flex: 1; text-align: center; position: relative; }
+  .ct-step:not(:last-child)::after { content: ''; position: absolute; top: 14px; left: 60%; width: 80%; height: 2px; background: var(--cream2); z-index: 0; }
+  .ct-dot { width: 28px; height: 28px; border-radius: 50%; background: var(--cream2); border: 2px solid var(--border); margin: 0 auto .4rem; display: flex; align-items: center; justify-content: center; font-size: .8rem; position: relative; z-index: 1; }
+  .ct-dot.active { background: var(--green); border-color: var(--green); color: #fff; }
+  .ct-label { font-size: .62rem; color: var(--muted); font-weight: 600; }
+
+  /* ── Excel section ── */
+  .excel-preview {
+    background: var(--white); border: 1px solid var(--border); border-radius: 10px;
+    overflow-x: auto; box-shadow: var(--shadow); margin-bottom: 1rem;
+  }
+  .excel-table { width: 100%; border-collapse: collapse; font-size: .75rem; }
+  .excel-table th { background: #1D6F42; color: #fff; padding: .5rem .7rem; text-align: left; font-size: .68rem; text-transform: uppercase; white-space: nowrap; }
+  .excel-table td { padding: .45rem .7rem; border-bottom: 1px solid #E8F5E9; white-space: nowrap; }
+  .excel-table tr:nth-child(even) td { background: #F1F8F4; }
+
+  .payment-badge { display: inline-block; padding: .15rem .45rem; border-radius: 4px; font-size: .65rem; font-weight: 700; }
+  .pay-cod { background: #FFF3E0; color: #E65100; }
+  .pay-upi { background: #E3F2FD; color: #1565C0; }
+  .pay-bank { background: #F3E5F5; color: #6A1B9A; }
+
+  .order-id-link { color: var(--maroon); font-weight: 700; cursor: pointer; text-decoration: underline; font-size: .78rem; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <div class="header-logo">A<span>S</span> Mangalyam <span style="font-size:.8rem;font-family:'Lato'">🌸</span></div>
+    <div class="header-sub">Order Management System · G. Anandan · 9710835979</div>
+  </div>
+  <div style="font-size:.75rem;color:rgba(255,255,255,.6);text-align:right">
+    <div id="liveClock"></div>
+    <div>Poonamalle, Chennai</div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('order')">📝 புதிய Order</button>
+  <button class="tab-btn" onclick="switchTab('admin')">📊 Dashboard</button>
+  <button class="tab-btn" onclick="switchTab('whatsapp')">💬 WhatsApp</button>
+  <button class="tab-btn" onclick="switchTab('excel')">📋 Excel / Report</button>
+  <button class="tab-btn hidden" id="confirm-tab-btn" onclick="switchTab('confirm')">✅ Order Confirmed</button>
+</div>
+
+<div class="main">
+
+  <!-- ═══ TAB 1: NEW ORDER FORM ═══ -->
+  <div id="tab-order" class="section active">
+    <div class="section-title">புதிய Order பதிவு செய்க</div>
+
+    <!-- Customer Details -->
+    <div class="form-card">
+      <div class="form-card-title">👤 Customer Details</div>
+      <div class="form-grid">
+        <div class="fg">
+          <label>Customer பெயர் *</label>
+          <input type="text" id="custName" placeholder="Full Name">
+        </div>
+        <div class="fg">
+          <label>Phone / WhatsApp *</label>
+          <input type="tel" id="custPhone" placeholder="10-digit mobile number">
+        </div>
+        <div class="fg">
+          <label>Email ID</label>
+          <input type="email" id="custEmail" placeholder="example@gmail.com">
+        </div>
+        <div class="fg">
+          <label>Customer Type</label>
+          <select id="custType">
+            <option value="retail">🛍️ Retail Customer</option>
+            <option value="wholesale">🏭 Wholesale Buyer</option>
+            <option value="temple">🛕 Temple / Trust</option>
+            <option value="shop">🏪 Shop Owner</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delivery Address -->
+    <div class="form-card">
+      <div class="form-card-title">📍 Delivery Address</div>
+      <div class="form-grid">
+        <div class="fg full">
+          <label>Door No / Street *</label>
+          <input type="text" id="addr1" placeholder="Door No, Street Name">
+        </div>
+        <div class="fg">
+          <label>Area / Landmark</label>
+          <input type="text" id="addr2" placeholder="Area or Landmark">
+        </div>
+        <div class="fg">
+          <label>City *</label>
+          <input type="text" id="addrCity" placeholder="City">
+        </div>
+        <div class="fg">
+          <label>State</label>
+          <select id="addrState">
+            <option>Tamil Nadu</option>
+            <option>Kerala</option>
+            <option>Karnataka</option>
+            <option>Andhra Pradesh</option>
+            <option>Telangana</option>
+            <option>Maharashtra</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>PIN Code</label>
+          <input type="text" id="addrPin" placeholder="6-digit PIN" maxlength="6">
+        </div>
+      </div>
+    </div>
+
+    <!-- Products -->
+    <div class="form-card">
+      <div class="form-card-title">🧵 Products ordered</div>
+      <table class="prod-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Type</th>
+            <th>Qty</th>
+            <th>Rate (₹)</th>
+            <th>Total</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="prodRows">
+          <tr id="prod-row-1">
+            <td>
+              <select onchange="updateRow(1)">
+                <option value="Classic Manjal Thali Kayiru" data-retail="38" data-ws="12">🟡 Classic Thali Kayiru 24"</option>
+                <option value="Temple Grade Premium Kayiru" data-retail="40" data-ws="15">🛕 Temple Grade Premium</option>
+                <option value="Short Thali Kayiru 18 inch" data-retail="35" data-ws="12">✨ Short Kayiru 18"</option>
+                <option value="Bulk Bundle 10 pcs" data-retail="370" data-ws="130">📦 Bulk Bundle (10 pcs)</option>
+                <option value="Wholesale Pack 50 pcs" data-retail="1900" data-ws="650">🏷️ Wholesale Pack (50 pcs)</option>
+                <option value="Mega Pack 100 pcs" data-retail="3800" data-ws="1200">🏭 Mega Pack (100 pcs)</option>
+              </select>
+            </td>
+            <td>
+              <select id="type-1" onchange="updateRow(1)">
+                <option value="retail">Retail</option>
+                <option value="wholesale">Wholesale</option>
+              </select>
+            </td>
+            <td><input type="number" id="qty-1" value="1" min="1" oninput="updateRow(1)"></td>
+            <td><input type="number" id="rate-1" value="38" min="1" oninput="updateRow(1)"></td>
+            <td id="total-1" style="font-weight:700;color:var(--maroon)">₹38</td>
+            <td><button class="del-btn" onclick="delRow(1)">🗑</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <button class="add-row-btn" onclick="addProdRow()">+ Product சேர்க்க</button>
+
+      <!-- Totals -->
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.3rem;margin-bottom:.8rem">
+        <div style="font-size:.78rem;color:var(--muted)">Sub Total: <strong id="subTotal">₹38</strong></div>
+        <div style="font-size:.78rem;color:var(--muted)">Delivery: <strong id="deliveryAmt" style="color:var(--green)">FREE</strong></div>
+      </div>
+      <div class="total-box">
+        <div>
+          <div class="total-label">Grand Total</div>
+          <div class="total-val" id="grandTotal">₹38</div>
+        </div>
+        <div style="text-align:right">
+          <div class="total-label">Items</div>
+          <div style="font-size:1.2rem;font-weight:700" id="totalItems">1</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment & Notes -->
+    <div class="form-card">
+      <div class="form-card-title">💳 Payment & Notes</div>
+      <div class="form-grid">
+        <div class="fg">
+          <label>Payment Method</label>
+          <select id="payMethod">
+            <option value="COD">💵 Cash on Delivery (COD)</option>
+            <option value="UPI">📱 UPI (GPay/PhonePe/Paytm)</option>
+            <option value="NEFT">🏦 NEFT / Bank Transfer</option>
+            <option value="WhatsApp">💬 WhatsApp Payment</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Order Priority</label>
+          <select id="priority">
+            <option value="normal">🟢 Normal (24hrs)</option>
+            <option value="urgent">🔴 Urgent (Same Day)</option>
+          </select>
+        </div>
+        <div class="fg full">
+          <label>Special Notes / Requirements</label>
+          <textarea id="notes" placeholder="e.g. Temple usage, specific size, special packing..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-primary" onclick="saveOrder()">✅ Order Save பண்ணு</button>
+      <button class="btn-wa" onclick="sendWhatsApp()">💬 WhatsApp அனுப்பு</button>
+      <button class="btn-gold" onclick="clearForm()">🔄 Clear Form</button>
+    </div>
+  </div>
+
+  <!-- ═══ TAB 2: ADMIN DASHBOARD ═══ -->
+  <div id="tab-admin" class="section">
+    <div class="section-title">📊 Order Dashboard</div>
+
+    <div class="stats-row" id="statsRow">
+      <!-- filled by JS -->
+    </div>
+
+    <div class="orders-wrap">
+      <div class="orders-head">
+        <div class="orders-title">📋 All Orders</div>
+        <div style="display:flex;gap:.5rem;align-items:center">
+          <input class="search-input" placeholder="🔍 Search..." oninput="searchOrders(this.value)">
+          <button class="btn-excel" style="padding:.4rem .8rem;font-size:.72rem" onclick="switchTab('excel')">📋 Export</button>
+        </div>
+      </div>
+      <div class="filter-row" style="padding:.8rem 1rem;border-bottom:1px solid var(--cream2)">
+        <button class="filter-btn active" onclick="filterOrders(this,'all')">All</button>
+        <button class="filter-btn" onclick="filterOrders(this,'placed')">🆕 Placed</button>
+        <button class="filter-btn" onclick="filterOrders(this,'confirmed')">✅ Confirmed</button>
+        <button class="filter-btn" onclick="filterOrders(this,'packed')">📦 Packed</button>
+        <button class="filter-btn" onclick="filterOrders(this,'out_for_delivery')">🚚 Out for Delivery</button>
+        <button class="filter-btn" onclick="filterOrders(this,'delivered')">🏠 Delivered</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="orders-table" id="ordersTable">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Phone</th>
+              <th>Email</th>
+              <th>Products</th>
+              <th>Amount</th>
+              <th>Payment</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="ordersBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TAB 3: WHATSAPP ═══ -->
+  <div id="tab-whatsapp" class="section">
+    <div class="section-title">💬 WhatsApp Order Format</div>
+
+    <div class="form-card">
+      <div class="form-card-title">Order ID select பண்ணு</div>
+      <div class="fg" style="margin-bottom:1rem">
+        <label>Order select பண்ணு</label>
+        <select id="waOrderSelect" onchange="loadWAPreview()">
+          <option value="">-- Order தேர்ந்தெடு --</option>
+        </select>
+      </div>
+      <div id="waContent">
+        <div class="empty"><div class="empty-ico">💬</div>Order select பண்ணினால் WhatsApp format காண்பிக்கும்</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TAB 4: EXCEL / REPORT ═══ -->
+  <div id="tab-excel" class="section">
+    <div class="section-title">📋 Export & Reports</div>
+
+    <div class="form-card">
+      <div class="form-card-title">📊 Order Report Preview</div>
+      <div class="btn-row" style="margin-bottom:1rem">
+        <button class="btn-excel" onclick="downloadCSV()">⬇️ CSV Download (Excel-ல் திற)</button>
+        <button class="btn-primary" onclick="downloadPrint()">🖨️ Print / PDF</button>
+      </div>
+      <div class="excel-preview">
+        <table class="excel-table" id="excelTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Order ID</th>
+              <th>Date</th>
+              <th>Customer</th>
+              <th>Phone</th>
+              <th>Email</th>
+              <th>Type</th>
+              <th>Products</th>
+              <th>Qty</th>
+              <th>Amount</th>
+              <th>Payment</th>
+              <th>Address</th>
+              <th>City</th>
+              <th>PIN</th>
+              <th>Status</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody id="excelBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- ═══ TAB 5: ORDER CONFIRMATION ═══ -->
+<div id="tab-confirm" class="section">
+  <div id="confirmContent"></div>
+</div>
+
+<!-- Order Detail Modal -->
+<div class="modal-overlay" id="detailModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <div class="modal-title" id="modalTitle">Order Details</div>
+      <button onclick="closeModal()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--muted)">✕</button>
+    </div>
+    <div id="modalBody"></div>
+    <div class="btn-row" style="margin-top:1rem">
+      <select id="statusUpdate" style="flex:1;padding:.55rem .8rem;border:1.5px solid var(--border);border-radius:6px;font-size:.82rem;background:var(--cream)">
+        <option value="placed">🆕 Placed</option>
+        <option value="confirmed">✅ Confirmed</option>
+        <option value="packed">📦 Packed</option>
+        <option value="out_for_delivery">🚚 Out for Delivery</option>
+        <option value="delivered">🏠 Delivered</option>
+      </select>
+      <button class="btn-primary" onclick="updateStatus()">Update</button>
+      <button class="btn-wa" onclick="waFromModal()">💬 WA</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  A S Mangalyam — Order Management System
+// ═══════════════════════════════════════════════════
+
+let orders = JSON.parse(localStorage.getItem('asm_orders') || '[]');
+let rowCount = 1;
+let currentFilter = 'all';
+let searchQuery = '';
+let selectedOrderId = null;
+
+const PRODUCTS = [
+  { value: 'Classic Manjal Thali Kayiru', retail: 38, ws: 12 },
+  { value: 'Temple Grade Premium Kayiru', retail: 40, ws: 15 },
+  { value: 'Short Thali Kayiru 18 inch',  retail: 35, ws: 12 },
+  { value: 'Bulk Bundle 10 pcs',           retail: 370, ws: 130 },
+  { value: 'Wholesale Pack 50 pcs',        retail: 1900, ws: 650 },
+  { value: 'Mega Pack 100 pcs',            retail: 3800, ws: 1200 },
+];
+
+// ── Clock ──
+function updateClock() {
+  const el = document.getElementById('liveClock');
+  if (el) el.textContent = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true, hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' });
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ── Tabs ──
+function switchTab(t) {
+  const tabNames = ['order','admin','whatsapp','excel','confirm'];
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    b.classList.toggle('active', tabNames[i] === t);
+  });
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('tab-' + t).classList.add('active');
+  if (t === 'admin') { renderStats(); renderOrders(); }
+  if (t === 'whatsapp') { populateWASelect(); }
+  if (t === 'excel') { renderExcel(); }
+}
+
+// ── Product Rows ──
+let rowId = 1;
+function addProdRow() {
+  rowId++;
+  const tbody = document.getElementById('prodRows');
+  const tr = document.createElement('tr');
+  tr.id = `prod-row-${rowId}`;
+  tr.innerHTML = `
+    <td>
+      <select onchange="updateRow(${rowId})">
+        <option value="Classic Manjal Thali Kayiru" data-retail="38" data-ws="12">🟡 Classic Thali Kayiru 24"</option>
+        <option value="Temple Grade Premium Kayiru" data-retail="40" data-ws="15">🛕 Temple Grade Premium</option>
+        <option value="Short Thali Kayiru 18 inch" data-retail="35" data-ws="12">✨ Short Kayiru 18"</option>
+        <option value="Bulk Bundle 10 pcs" data-retail="370" data-ws="130">📦 Bulk Bundle (10 pcs)</option>
+        <option value="Wholesale Pack 50 pcs" data-retail="1900" data-ws="650">🏷️ Wholesale Pack (50 pcs)</option>
+        <option value="Mega Pack 100 pcs" data-retail="3800" data-ws="1200">🏭 Mega Pack (100 pcs)</option>
+      </select>
+    </td>
+    <td><select id="type-${rowId}" onchange="updateRow(${rowId})"><option value="retail">Retail</option><option value="wholesale">Wholesale</option></select></td>
+    <td><input type="number" id="qty-${rowId}" value="1" min="1" oninput="updateRow(${rowId})"></td>
+    <td><input type="number" id="rate-${rowId}" value="38" min="1" oninput="updateRow(${rowId})"></td>
+    <td id="total-${rowId}" style="font-weight:700;color:var(--maroon)">₹38</td>
+    <td><button class="del-btn" onclick="delRow(${rowId})">🗑</button></td>
+  `;
+  tbody.appendChild(tr);
+  updateRow(rowId);
+}
+
+function delRow(id) {
+  const row = document.getElementById(`prod-row-${id}`);
+  if (row && document.querySelectorAll('#prodRows tr').length > 1) {
+    row.remove(); calcTotal();
+  } else showToast('குறைந்தது 1 product வேண்டும்');
+}
+
+function updateRow(id) {
+  const row  = document.getElementById(`prod-row-${id}`);
+  if (!row) return;
+  const sel  = row.querySelector('select');
+  const opt  = sel.options[sel.selectedIndex];
+  const type = document.getElementById(`type-${id}`).value;
+  const qty  = parseInt(document.getElementById(`qty-${id}`).value) || 1;
+  const defaultRate = type === 'wholesale' ? parseInt(opt.dataset.ws) : parseInt(opt.dataset.retail);
+  const rateEl = document.getElementById(`rate-${id}`);
+  if (!rateEl.dataset.manual) rateEl.value = defaultRate;
+  const rate  = parseInt(rateEl.value) || defaultRate;
+  const total = qty * rate;
+  document.getElementById(`total-${id}`).textContent = '₹' + total.toLocaleString('en-IN');
+  calcTotal();
+}
+
+document.getElementById('rate-1').addEventListener('input', function() { this.dataset.manual = '1'; });
+
+function calcTotal() {
+  let sub = 0, items = 0;
+  document.querySelectorAll('#prodRows tr').forEach(row => {
+    const id  = row.id.replace('prod-row-', '');
+    const qty = parseInt(document.getElementById(`qty-${id}`)?.value) || 0;
+    const rate = parseInt(document.getElementById(`rate-${id}`)?.value) || 0;
+    sub += qty * rate;
+    items += qty;
+  });
+  const delivery = sub >= 199 ? 0 : 40;
+  const grand = sub + delivery;
+  document.getElementById('subTotal').textContent = '₹' + sub.toLocaleString('en-IN');
+  document.getElementById('deliveryAmt').textContent = delivery === 0 ? 'FREE' : '₹' + delivery;
+  document.getElementById('grandTotal').textContent = '₹' + grand.toLocaleString('en-IN');
+  document.getElementById('totalItems').textContent = items;
+}
+
+// ── Collect Form Items ──
+function collectItems() {
+  const items = [];
+  document.querySelectorAll('#prodRows tr').forEach(row => {
+    const id    = row.id.replace('prod-row-', '');
+    const sel   = row.querySelector('select');
+    const name  = sel.options[sel.selectedIndex].text.replace(/^[^\s]+\s/, '');
+    const type  = document.getElementById(`type-${id}`)?.value;
+    const qty   = parseInt(document.getElementById(`qty-${id}`)?.value) || 1;
+    const rate  = parseInt(document.getElementById(`rate-${id}`)?.value) || 0;
+    items.push({ name, type, qty, rate, total: qty * rate });
+  });
+  return items;
+}
+
+// ── Save Order ──
+function saveOrder() {
+  const name  = document.getElementById('custName').value.trim();
+  const phone = document.getElementById('custPhone').value.trim();
+  const addr1 = document.getElementById('addr1').value.trim();
+  const city  = document.getElementById('addrCity').value.trim();
+  if (!name)  { showToast('❌ Customer பெயர் கொடுக்கவும்'); return; }
+  if (!phone) { showToast('❌ Phone number கொடுக்கவும்'); return; }
+  if (!addr1) { showToast('❌ Address கொடுக்கவும்'); return; }
+  if (!city)  { showToast('❌ City கொடுக்கவும்'); return; }
+
+  const items = collectItems();
+  let sub = items.reduce((s, i) => s + i.total, 0);
+  const delivery = sub >= 199 ? 0 : 40;
+
+  const order = {
+    id:       'ASM-' + Date.now().toString().slice(-6),
+    date:     new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+    customer: { name, phone, email: document.getElementById('custEmail').value.trim(), type: document.getElementById('custType').value },
+    address:  { line1: addr1, area: document.getElementById('addr2').value.trim(), city, state: document.getElementById('addrState').value, pin: document.getElementById('addrPin').value.trim() },
+    items,
+    subtotal:  sub,
+    delivery,
+    total:     sub + delivery,
+    payment:   document.getElementById('payMethod').value,
+    priority:  document.getElementById('priority').value,
+    notes:     document.getElementById('notes').value.trim(),
+    status:    'placed',
+  };
+
+  orders.unshift(order);
+  localStorage.setItem('asm_orders', JSON.stringify(orders));
+  showToast('✅ Order ' + order.id + ' saved!');
+  clearForm();
+  showConfirmation(order);
+}
+
+// ── Show Order Confirmation Page ──
+function showConfirmation(o) {
+  // Show the confirm tab button
+  const confirmBtn = document.getElementById('confirm-tab-btn');
+  if (confirmBtn) confirmBtn.classList.remove('hidden');
+
+  const typeLabel = { retail: 'Retail Customer', wholesale: 'Wholesale', shop: 'Shop / Reseller', temple: 'Temple', other: 'Other' };
+  const payLabel  = o.payment;
+  const priorityLabel = o.priority === 'urgent' ? '🔴 Urgent' : o.priority === 'high' ? '🟠 High' : '🟢 Normal';
+
+  // Timeline steps
+  const steps = [
+    { icon: '🆕', label: 'Placed', key: 'placed' },
+    { icon: '✅', label: 'Confirmed', key: 'confirmed' },
+    { icon: '📦', label: 'Packed', key: 'packed' },
+    { icon: '🚚', label: 'Delivery', key: 'out_for_delivery' },
+    { icon: '🏠', label: 'Delivered', key: 'delivered' },
+  ];
+  const timelineHTML = steps.map(s =>
+    `<div class="ct-step">
+      <div class="ct-dot ${s.key === 'placed' ? 'active' : ''}">${s.key === 'placed' ? '✓' : s.icon}</div>
+      <div class="ct-label">${s.label}</div>
+    </div>`
+  ).join('');
+
+  // Items rows
+  const itemsHTML = o.items.map(i =>
+    `<tr>
+      <td>${i.name}</td>
+      <td style="text-align:center">${i.type === 'wholesale' ? '🏷️ WS' : '🛍️ Retail'}</td>
+      <td style="text-align:center">${i.qty}</td>
+      <td style="text-align:right">₹${i.rate}</td>
+      <td style="text-align:right;font-weight:700;color:var(--maroon)">₹${i.total.toLocaleString('en-IN')}</td>
+    </tr>`
+  ).join('');
+
+  document.getElementById('confirmContent').innerHTML = `
+    <div class="confirm-wrap">
+
+      <!-- Success Banner -->
+      <div class="confirm-success-banner">
+        <div class="confirm-tick">✅</div>
+        <div class="confirm-title">Order Successfully Placed!</div>
+        <div class="confirm-subtitle">${o.date}</div>
+        <div class="confirm-order-id">${o.id}</div>
+      </div>
+
+      <!-- Order Timeline -->
+      <div class="confirm-card">
+        <div class="confirm-card-title">📍 Order Status</div>
+        <div class="confirm-timeline">${timelineHTML}</div>
+        <div style="text-align:center;margin-top:.8rem;font-size:.8rem;color:var(--green);font-weight:700">
+          🟢 Order Placed — Processing தொடங்கியது
+        </div>
+      </div>
+
+      <!-- Customer Details -->
+      <div class="confirm-card">
+        <div class="confirm-card-title">👤 Customer Details</div>
+        <div class="confirm-detail-row">
+          <span class="confirm-detail-key">பெயர்</span>
+          <span class="confirm-detail-val">${o.customer.name}</span>
+        </div>
+        <div class="confirm-detail-row">
+          <span class="confirm-detail-key">Phone</span>
+          <span class="confirm-detail-val"><a href="tel:${o.customer.phone}" style="color:var(--maroon);text-decoration:none">📞 ${o.customer.phone}</a></span>
+        </div>
+        ${o.customer.email ? `<div class="confirm-detail-row">
+          <span class="confirm-detail-key">Email</span>
+          <span class="confirm-detail-val">${o.customer.email}</span>
+        </div>` : ''}
+        <div class="confirm-detail-row">
+          <span class="confirm-detail-key">Customer Type</span>
+          <span class="confirm-detail-val">${typeLabel[o.customer.type] || o.customer.type}</span>
+        </div>
+      </div>
+
+      <!-- Delivery Address -->
+      <div class="confirm-card">
+        <div class="confirm-card-title">📍 Delivery Address</div>
+        <div class="confirm-detail-row">
+          <span class="confirm-detail-key">Address</span>
+          <span class="confirm-detail-val">${o.address.line1}${o.address.area ? ', ' + o.address.area : ''}</span>
+        </div>
+        <div class="confirm-detail-row">
+          <span class="confirm-detail-key">City</span>
+          <span class="confirm-detail-val">${o.address.city}</span>
+        </div>
+        <div class="confirm-detail-row">
+          <span class="confirm-detail-key">State</span>
+          <span class="confirm-detail-val">${o.address.state}</span>
+        </div>
+        ${o.address.pin ? `<div class="confirm-detail-row">
+          <span class="confirm-detail-key">PIN Code</span>
+          <span class="confirm-detail-val">${o.address.pin}</span>
+        </div>` : ''}
+      </div>
+
+      <!-- Products Ordered -->
+      <div class="confirm-card">
+        <div class="confirm-card-title">🧵 Products Ordered</div>
+        <table class="confirm-items-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th style="text-align:center">Type</th>
+              <th style="text-align:center">Qty</th>
+              <th style="text-align:right">Rate</th>
+              <th style="text-align:right">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsHTML}
+            <tr class="confirm-total-row">
+              <td colspan="4" style="text-align:right">Sub Total</td>
+              <td style="text-align:right">₹${o.subtotal.toLocaleString('en-IN')}</td>
+            </tr>
+            <tr class="confirm-total-row">
+              <td colspan="4" style="text-align:right">Delivery</td>
+              <td style="text-align:right">${o.delivery === 0 ? '<span class="confirm-badge-free">FREE</span>' : '₹' + o.delivery}</td>
+            </tr>
+            <tr style="background:var(--maroon)">
+              <td colspan="4" style="text-align:right;color:#fff;font-size:.92rem">Grand Total</td>
+              <td style="text-align:right;color:var(--gold2);font-size:1.05rem;font-weight:700">₹${o.total.toLocaleString('en-IN')}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Payment & Priority -->
+      <div class="confirm-card">
+        <div class="confirm-card-title">💰 Payment & Priority</div>
+        <div class="confirm-detail-row">
+          <span class="confirm-detail-key">Payment</span>
+          <span class="confirm-detail-val">${payLabel}</span>
+        </div>
+        <div class="confirm-detail-row">
+          <span class="confirm-detail-key">Priority</span>
+          <span class="confirm-detail-val">${priorityLabel}</span>
+        </div>
+        ${o.notes ? `<div class="confirm-detail-row">
+          <span class="confirm-detail-key">Notes</span>
+          <span class="confirm-detail-val">${o.notes}</span>
+        </div>` : ''}
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="confirm-actions">
+        <button class="btn-wa" onclick="waOrder('${o.id}')">💬 WhatsApp அனுப்பு</button>
+        <button class="btn-primary" onclick="switchTab('admin')">📊 Dashboard பார்</button>
+        <button class="btn-secondary" onclick="newOrder()">➕ புதிய Order</button>
+      </div>
+
+    </div>
+  `;
+
+  switchTab('confirm');
+}
+
+function newOrder() {
+  document.getElementById('confirm-tab-btn').classList.add('hidden');
+  switchTab('order');
+}
+
+function clearForm() {
+  ['custName','custPhone','custEmail','addr1','addr2','addrCity','addrPin','notes'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('prodRows').innerHTML = `
+    <tr id="prod-row-1">
+      <td><select onchange="updateRow(1)">
+        <option value="Classic Manjal Thali Kayiru" data-retail="38" data-ws="12">🟡 Classic Thali Kayiru 24"</option>
+        <option value="Temple Grade Premium Kayiru" data-retail="40" data-ws="15">🛕 Temple Grade Premium</option>
+        <option value="Short Thali Kayiru 18 inch" data-retail="35" data-ws="12">✨ Short Kayiru 18"</option>
+        <option value="Bulk Bundle 10 pcs" data-retail="370" data-ws="130">📦 Bulk Bundle (10 pcs)</option>
+        <option value="Wholesale Pack 50 pcs" data-retail="1900" data-ws="650">🏷️ Wholesale Pack (50 pcs)</option>
+        <option value="Mega Pack 100 pcs" data-retail="3800" data-ws="1200">🏭 Mega Pack (100 pcs)</option>
+      </select></td>
+      <td><select id="type-1" onchange="updateRow(1)"><option value="retail">Retail</option><option value="wholesale">Wholesale</option></select></td>
+      <td><input type="number" id="qty-1" value="1" min="1" oninput="updateRow(1)"></td>
+      <td><input type="number" id="rate-1" value="38" min="1" oninput="updateRow(1)"></td>
+      <td id="total-1" style="font-weight:700;color:var(--maroon)">₹38</td>
+      <td><button class="del-btn" onclick="delRow(1)">🗑</button></td>
+    </tr>`;
+  rowId = 1; calcTotal();
+}
+
+// ── Stats ──
+function renderStats() {
+  const total    = orders.length;
+  const revenue  = orders.reduce((s, o) => s + o.total, 0);
+  const pending  = orders.filter(o => !['delivered'].includes(o.status)).length;
+  const today    = orders.filter(o => o.date.startsWith(new Date().toLocaleDateString('en-IN'))).length;
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat-card"><div class="stat-val">${total}</div><div class="stat-lbl">Total Orders</div></div>
+    <div class="stat-card"><div class="stat-val">₹${revenue.toLocaleString('en-IN')}</div><div class="stat-lbl">Total Revenue</div></div>
+    <div class="stat-card"><div class="stat-val">${pending}</div><div class="stat-lbl">Pending</div></div>
+    <div class="stat-card"><div class="stat-val">${today}</div><div class="stat-lbl">Today</div></div>`;
+}
+
+// ── Orders Table ──
+const STATUS_LABELS = { placed:'s-placed', confirmed:'s-confirmed', packed:'s-packed', out_for_delivery:'s-delivery', delivered:'s-delivered' };
+const STATUS_TEXT   = { placed:'🆕 Placed', confirmed:'✅ Confirmed', packed:'📦 Packed', out_for_delivery:'🚚 Out for Delivery', delivered:'🏠 Delivered' };
+
+function renderOrders() {
+  const filtered = orders.filter(o => {
+    const matchStatus = currentFilter === 'all' || o.status === currentFilter;
+    const q = searchQuery.toLowerCase();
+    const matchSearch = !q || o.id.toLowerCase().includes(q) || o.customer.name.toLowerCase().includes(q) || o.customer.phone.includes(q);
+    return matchStatus && matchSearch;
+  });
+  const tbody = document.getElementById('ordersBody');
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="10"><div class="empty"><div class="empty-ico">📋</div>Orders இல்லை</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = filtered.map(o => {
+    const badge = STATUS_LABELS[o.status] || 's-placed';
+    const text  = STATUS_TEXT[o.status] || o.status;
+    const products = o.items.map(i => `${i.name} ×${i.qty}`).join(', ');
+    const pay = o.payment === 'COD' ? '<span class="payment-badge pay-cod">COD</span>' : o.payment === 'UPI' ? '<span class="payment-badge pay-upi">UPI</span>' : `<span class="payment-badge pay-bank">${o.payment}</span>`;
+    return `<tr>
+      <td><span class="order-id-link" onclick="viewOrder('${o.id}')">${o.id}</span></td>
+      <td>${o.customer.name}</td>
+      <td><a href="tel:${o.customer.phone}" style="color:var(--maroon);text-decoration:none">${o.customer.phone}</a></td>
+      <td style="color:var(--muted);font-size:.72rem">${o.customer.email || '—'}</td>
+      <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${products}">${products}</td>
+      <td style="font-weight:700;color:var(--maroon)">₹${o.total.toLocaleString('en-IN')}</td>
+      <td>${pay}</td>
+      <td><span class="status-badge ${badge}">${text}</span></td>
+      <td style="color:var(--muted);font-size:.72rem;white-space:nowrap">${o.date.split(',')[0]}</td>
+      <td>
+        <button class="action-btn ab-view" onclick="viewOrder('${o.id}')">👁</button>
+        <button class="action-btn ab-wa"   onclick="waOrder('${o.id}')">💬</button>
+        <button class="action-btn ab-del"  onclick="deleteOrder('${o.id}')">🗑</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filterOrders(el, f) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  currentFilter = f;
+  renderOrders();
+}
+
+function searchOrders(q) { searchQuery = q; renderOrders(); }
+
+function deleteOrder(id) {
+  if (!confirm('Delete order ' + id + '?')) return;
+  orders = orders.filter(o => o.id !== id);
+  localStorage.setItem('asm_orders', JSON.stringify(orders));
+  renderStats(); renderOrders();
+  showToast('🗑 Order deleted');
+}
+
+// ── View Order Modal ──
+function viewOrder(id) {
+  selectedOrderId = id;
+  const o = orders.find(x => x.id === id);
+  if (!o) return;
+  document.getElementById('modalTitle').textContent = '📋 ' + o.id;
+  document.getElementById('statusUpdate').value = o.status;
+  document.getElementById('modalBody').innerHTML = `
+    <div class="detail-row"><span class="detail-key">Customer</span><span><strong>${o.customer.name}</strong></span></div>
+    <div class="detail-row"><span class="detail-key">Phone</span><span>${o.customer.phone}</span></div>
+    <div class="detail-row"><span class="detail-key">Email</span><span>${o.customer.email || '—'}</span></div>
+    <div class="detail-row"><span class="detail-key">Type</span><span>${o.customer.type}</span></div>
+    <div class="detail-row"><span class="detail-key">Address</span><span>${o.address.line1}${o.address.area ? ', ' + o.address.area : ''}, ${o.address.city}, ${o.address.state} ${o.address.pin}</span></div>
+    <div style="margin:.8rem 0;padding:.6rem;background:var(--cream);border-radius:6px">
+      ${o.items.map(i => `<div style="display:flex;justify-content:space-between;font-size:.8rem;padding:.2rem 0"><span>${i.name} ×${i.qty} (${i.type})</span><strong>₹${i.total.toLocaleString('en-IN')}</strong></div>`).join('')}
+    </div>
+    <div class="detail-row"><span class="detail-key">Subtotal</span><span>₹${o.subtotal.toLocaleString('en-IN')}</span></div>
+    <div class="detail-row"><span class="detail-key">Delivery</span><span>${o.delivery === 0 ? 'FREE' : '₹' + o.delivery}</span></div>
+    <div class="detail-row"><span class="detail-key">Grand Total</span><span style="font-weight:700;color:var(--maroon);font-size:1rem">₹${o.total.toLocaleString('en-IN')}</span></div>
+    <div class="detail-row"><span class="detail-key">Payment</span><span>${o.payment}</span></div>
+    <div class="detail-row"><span class="detail-key">Priority</span><span>${o.priority}</span></div>
+    <div class="detail-row"><span class="detail-key">Notes</span><span>${o.notes || '—'}</span></div>
+    <div class="detail-row"><span class="detail-key">Date</span><span>${o.date}</span></div>`;
+  document.getElementById('detailModal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('detailModal').classList.remove('open'); selectedOrderId = null; }
+
+function updateStatus() {
+  if (!selectedOrderId) return;
+  const o = orders.find(x => x.id === selectedOrderId);
+  if (!o) return;
+  o.status = document.getElementById('statusUpdate').value;
+  localStorage.setItem('asm_orders', JSON.stringify(orders));
+  closeModal(); renderStats(); renderOrders();
+  showToast('✅ Status updated!');
+}
+
+function waFromModal() {
+  if (selectedOrderId) waOrder(selectedOrderId);
+}
+
+// ── WhatsApp ──
+function buildWAText(o) {
+  const items = o.items.map(i => `  • ${i.name} ×${i.qty} @ ₹${i.rate}/pc = ₹${i.total.toLocaleString('en-IN')}`).join('\n');
+  return `🌸 *A S MANGALYAM*
+G. Anandan · Poonamalle, Chennai
+📞 9710835979 | 7305775184
+━━━━━━━━━━━━━━━━━━━━
+
+📋 *Order Confirmation*
+Order ID: *${o.id}*
+Date: ${o.date}
+
+👤 *Customer Details*
+பெயர்: ${o.customer.name}
+Phone: ${o.customer.phone}${o.customer.email ? '\nEmail: ' + o.customer.email : ''}
+Type: ${o.customer.type.charAt(0).toUpperCase() + o.customer.type.slice(1)}
+
+📍 *Delivery Address*
+${o.address.line1}${o.address.area ? ', ' + o.address.area : ''}
+${o.address.city}, ${o.address.state}${o.address.pin ? ' - ' + o.address.pin : ''}
+
+🧵 *Products Ordered*
+${items}
+
+💰 *Payment Details*
+Sub Total: ₹${o.subtotal.toLocaleString('en-IN')}
+Delivery: ${o.delivery === 0 ? 'FREE' : '₹' + o.delivery}
+*Grand Total: ₹${o.total.toLocaleString('en-IN')}*
+Payment: ${o.payment}
+
+${o.priority === 'urgent' ? '🔴 *URGENT ORDER — Same Day Dispatch*\n' : ''}${o.notes ? '📝 Notes: ' + o.notes + '\n' : ''}
+✅ Order received! 24 hours-ல் dispatch செய்கிறோம்.
+நன்றி 🙏`;
+}
+
+function waOrder(id) {
+  const o = orders.find(x => x.id === id);
+  if (!o) return;
+  const text = buildWAText(o);
+  window.open('https://wa.me/91' + o.customer.phone + '?text=' + encodeURIComponent(text), '_blank');
+}
+
+function sendWhatsApp() {
+  const name  = document.getElementById('custName').value.trim();
+  const phone = document.getElementById('custPhone').value.trim();
+  if (!name || !phone) { showToast('❌ Customer details கொடுக்கவும்'); return; }
+  const items = collectItems();
+  const sub   = items.reduce((s, i) => s + i.total, 0);
+  const delivery = sub >= 199 ? 0 : 40;
+  const tempOrder = {
+    id: 'DRAFT', date: new Date().toLocaleString('en-IN'),
+    customer: { name, phone, email: document.getElementById('custEmail').value.trim(), type: document.getElementById('custType').value },
+    address:  { line1: document.getElementById('addr1').value.trim(), area: document.getElementById('addr2').value.trim(), city: document.getElementById('addrCity').value.trim(), state: document.getElementById('addrState').value, pin: document.getElementById('addrPin').value.trim() },
+    items, subtotal: sub, delivery, total: sub + delivery,
+    payment: document.getElementById('payMethod').value,
+    priority: document.getElementById('priority').value,
+    notes: document.getElementById('notes').value.trim(), status: 'placed',
+  };
+  const text = buildWAText(tempOrder);
+  window.open('https://wa.me/91' + phone + '?text=' + encodeURIComponent(text), '_blank');
+}
+
+function populateWASelect() {
+  const sel = document.getElementById('waOrderSelect');
+  sel.innerHTML = '<option value="">-- Order தேர்ந்தெடு --</option>';
+  orders.forEach(o => {
+    const opt = document.createElement('option');
+    opt.value = o.id;
+    opt.textContent = o.id + ' — ' + o.customer.name + ' — ₹' + o.total.toLocaleString('en-IN');
+    sel.appendChild(opt);
+  });
+}
+
+function loadWAPreview() {
+  const id = document.getElementById('waOrderSelect').value;
+  const o  = orders.find(x => x.id === id);
+  const div = document.getElementById('waContent');
+  if (!o) { div.innerHTML = '<div class="empty"><div class="empty-ico">💬</div>Order select பண்ணினால் WhatsApp format காண்பிக்கும்</div>'; return; }
+  const text = buildWAText(o);
+  div.innerHTML = `
+    <div class="wa-preview">
+      <div class="wa-bubble">${text.replace(/\n/g,'<br>').replace(/\*(.*?)\*/g,'<strong>$1</strong>')}</div>
+      <div class="wa-time">${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</div>
+    </div>
+    <div class="btn-row" style="margin-top:1rem">
+      <button class="btn-wa" onclick="waOrder('${o.id}')">💬 Customer-க்கு அனுப்பு (${o.customer.phone})</button>
+      <button class="btn-primary" onclick="waOwner('${o.id}')">📲 G. Anandan-க்கு அனுப்பு</button>
+    </div>`;
+}
+
+function waOwner(id) {
+  const o = orders.find(x => x.id === id);
+  if (!o) return;
+  const text = buildWAText(o);
+  window.open('https://wa.me/919710835979?text=' + encodeURIComponent(text), '_blank');
+}
+
+// ── Excel ──
+function renderExcel() {
+  const tbody = document.getElementById('excelBody');
+  if (!orders.length) { tbody.innerHTML = '<tr><td colspan="16"><div class="empty"><div class="empty-ico">📋</div>Orders இல்லை</div></td></tr>'; return; }
+  tbody.innerHTML = orders.map((o, i) => {
+    const products = o.items.map(x => `${x.name}×${x.qty}`).join(' | ');
+    const qty = o.items.reduce((s, x) => s + x.qty, 0);
+    const payClass = o.payment === 'COD' ? 'pay-cod' : o.payment === 'UPI' ? 'pay-upi' : 'pay-bank';
+    return `<tr>
+      <td>${i + 1}</td>
+      <td style="font-weight:700;color:var(--maroon)">${o.id}</td>
+      <td>${o.date.split(',')[0]}</td>
+      <td>${o.customer.name}</td>
+      <td>${o.customer.phone}</td>
+      <td style="color:var(--muted)">${o.customer.email || '—'}</td>
+      <td>${o.customer.type}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${products}">${products}</td>
+      <td style="text-align:center">${qty}</td>
+      <td style="font-weight:700;color:var(--maroon)">₹${o.total.toLocaleString('en-IN')}</td>
+      <td><span class="payment-badge ${payClass}">${o.payment}</span></td>
+      <td>${o.address.line1}${o.address.area ? ', ' + o.address.area : ''}</td>
+      <td>${o.address.city}</td>
+      <td>${o.address.pin || '—'}</td>
+      <td>${STATUS_TEXT[o.status] || o.status}</td>
+      <td style="color:var(--muted)">${o.notes || '—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function downloadCSV() {
+  const headers = ['#','Order ID','Date','Customer Name','Phone','Email','Customer Type','Products','Total Qty','Amount (₹)','Payment','Address','City','PIN','State','Status','Priority','Notes'];
+  const rows = orders.map((o, i) => {
+    const products = o.items.map(x => `${x.name} x${x.qty} @₹${x.rate}`).join(' | ');
+    const qty = o.items.reduce((s, x) => s + x.qty, 0);
+    return [
+      i+1, o.id, o.date.split(',')[0], o.customer.name, o.customer.phone, o.customer.email || '',
+      o.customer.type, products, qty, o.total, o.payment,
+      `${o.address.line1}${o.address.area ? ', '+o.address.area : ''}`,
+      o.address.city, o.address.pin || '', o.address.state,
+      STATUS_TEXT[o.status] || o.status, o.priority, o.notes || ''
+    ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
+  });
+  const csv = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'ASMangalyam_Orders_' + new Date().toLocaleDateString('en-IN').replace(/\//g,'-') + '.csv';
+  a.click();
+  showToast('✅ CSV downloaded! Excel-ல் திறக்கவும்');
+}
+
+function downloadPrint() { window.print(); }
+
+// ── Toast ──
+let toastTimer;
+function showToast(m) {
+  const t = document.getElementById('toast');
+  t.textContent = m; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── Init ──
+calcTotal();
+
+// Add some demo orders if empty
+if (orders.length === 0) {
+  orders = [
+    { id:'ASM-001', date:'03/04/2025, 10:30 AM', customer:{name:'Meena Rajan', phone:'9876543210', email:'meena@gmail.com', type:'retail'}, address:{line1:'12, Gandhi Street', area:'Anna Nagar', city:'Chennai', state:'Tamil Nadu', pin:'600040'}, items:[{name:'Classic Manjal Thali Kayiru',type:'retail',qty:5,rate:38,total:190}], subtotal:190, delivery:0, total:190, payment:'COD', priority:'normal', notes:'Wedding purpose', status:'delivered'},
+    { id:'ASM-002', date:'03/04/2025, 11:15 AM', customer:{name:'Venkatesh I', phone:'9845123456', email:'', type:'wholesale'}, address:{line1:'45, Temple Road', area:'', city:'Madurai', state:'Tamil Nadu', pin:'625001'}, items:[{name:'Classic Manjal Thali Kayiru',type:'wholesale',qty:50,rate:13,total:650},{name:'Temple Grade Premium Kayiru',type:'wholesale',qty:20,rate:15,total:300}], subtotal:950, delivery:0, total:950, payment:'UPI', priority:'urgent', notes:'Temple supplier', status:'confirmed'},
+    { id:'ASM-003', date:'03/04/2025, 02:00 PM', customer:{name:'Kavitha R', phone:'9712345678', email:'kavitha@yahoo.com', type:'shop'}, address:{line1:'88, Market Road', area:'RS Puram', city:'Coimbatore', state:'Tamil Nadu', pin:'641002'}, items:[{name:'Wholesale Pack 50 pcs',type:'wholesale',qty:2,rate:650,total:1300}], subtotal:1300, delivery:0, total:1300, payment:'NEFT', priority:'normal', notes:'', status:'packed'},
+  ];
+  localStorage.setItem('asm_orders', JSON.stringify(orders));
+}
+</script>
+</body>
+</html>
