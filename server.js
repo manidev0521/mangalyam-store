@@ -210,15 +210,29 @@ app.delete('/api/products/:id', protect, adminOnly, async (req, res) => {
 // ══════════════════════════════════════════════════════════
 app.post('/api/orders', async (req, res) => {
   try {
-    const { customerName, phone, address, city, items, totalAmount } = req.body;
-    if (!customerName || !phone || !items || !totalAmount)
+    const { customerName, phone, address, city, items, totalAmount, deliveryAddress, paymentMethod, guestPhone } = req.body;
+
+    // Support both formats: direct fields OR deliveryAddress object (from script.js)
+    const name   = customerName || (deliveryAddress && deliveryAddress.name);
+    const mobile = phone || guestPhone || (deliveryAddress && deliveryAddress.phone);
+    const street = address || (deliveryAddress && deliveryAddress.street) || '';
+    const town   = city || (deliveryAddress && deliveryAddress.city) || '';
+    const total  = totalAmount || (items && items.reduce((s, i) => s + ((i.unitPrice || i.retail || 0) * (i.qty || 1)), 0)) || 0;
+
+    if (!name || !mobile || !items || !items.length)
       return res.status(400).json({ success: false, message: 'தேவையான details கொடுக்கவும்' });
+
     const order = await Order.create({
-      customerName, phone, address, city, items, totalAmount,
+      customerName: name,
+      phone: mobile,
+      address: street,
+      city: town,
+      items,
+      totalAmount: total,
       user: req.user ? req.user._id : undefined,
-      timeline: [{ status: 'placed', message: 'G. Anandan உங்கள் order பெற்றார்' }],
+      timeline: [{ status: 'placed', message: 'G. Anandan உங்கள் order பெற்றார் · Poonamalle, Chennai' }],
     });
-    res.status(201).json({ success: true, order });
+    res.status(201).json({ success: true, order, orderId: order.orderId });
   } catch (err) { res.status(400).json({ success: false, message: err.message }); }
 });
 
