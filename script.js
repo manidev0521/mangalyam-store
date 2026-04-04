@@ -7,12 +7,12 @@ const API = '';
 
 // ── Fallback product data (used when server is not running) ──
 const FALLBACK_PRODS = [
-  {id:'p1',cats:['all','yellow'],name:'Classic Manjal Thali Kayiru',tamil:'கைவினை முறை மஞ்சள் தாலி கயிறு',brand:'Mangalyam · G. Anandan',type:'Natural Turmeric · Pure Cotton · 24 inch',badge:'BESTSELLER',bc:'m',imgs:['images/product1.png','images/product4.png'],emoji:'🟡',retail:22,ws:10,wsMin:20,rating:4.9,reviews:521,specs:{Material:'Pure Cotton',Length:'24 inches',Dye:'Natural Haldi',Twist:'3-ply',Owner:'G. Anandan',Origin:'Poonamalle, Chennai'}},
-  {id:'p2',cats:['all','bulk','wholesale'],name:'Bulk Bundle — 10 pcs',tamil:'10 நூல் தொகுப்பு',brand:'Mangalyam · G. Anandan',type:'Set of 10 · Ready Dispatch · Plastic Packed',badge:'BULK',bc:'g',imgs:['images/product2.png','images/product3.png'],emoji:'📦',retail:220,ws:100,wsMin:1,rating:4.8,reviews:342,specs:{Quantity:'10 pcs',Material:'Pure Cotton',Price:'₹22/pc retail',WSPrice:'₹11/pc wholesale',Dispatch:'Same day',Origin:'Poonamalle, Chennai'}},
-  {id:'p3',cats:['all','wholesale'],name:'Wholesale Pack — 50 pcs',tamil:'50 நூல் மொத்த தொகுப்பு',brand:'Mangalyam · G. Anandan',type:'50 pcs · Plastic Sealed · GST Invoice',badge:'WHOLESALE',bc:'m',imgs:['images/product3.png','images/product2.png'],emoji:'🏷️',retail:1100,ws:500,wsMin:1,rating:4.9,reviews:187,specs:{Quantity:'50 pcs',Price:'₹22/pc retail',WSPrice:'₹11/pc wholesale',GST:'Invoice incl.',Dispatch:'Priority 24hrs',Origin:'Poonamalle, Chennai'}},
-  {id:'p4',cats:['all','temple'],name:'Temple Grade Premium Kayiru',tamil:'கோவில் தர தாலி கயிறு',brand:'Mangalyam · G. Anandan',type:'Premium Cotton · Double Dyed · 24 inch',badge:'TEMPLE',bc:'m',imgs:['images/product4.png','images/product1.png'],emoji:'🛕',retail:25,ws:13,wsMin:20,rating:5.0,reviews:289,specs:{Material:'Premium Cotton',Length:'24 inches',Dye:'Double Haldi',Grade:'Temple Grade',Owner:'G. Anandan',Origin:'Poonamalle, Chennai'}},
-  {id:'p5',cats:['all','wholesale'],name:'Mega Pack — 100 pcs',tamil:'100 நூல் மொத்த விலை',brand:'Mangalyam · G. Anandan',type:'100 pcs · Factory Direct · Best Rate',badge:'BEST VALUE',bc:'g',imgs:['images/product3.png','images/product2.png'],emoji:'🏭',retail:2200,ws:1000,wsMin:1,rating:4.8,reviews:94,specs:{Quantity:'100 pcs',RetailRate:'₹22/pc',WSRate:'₹10/pc',Savings:'₹1,200 saved',Dispatch:'Priority',Origin:'Poonamalle, Chennai'}},
-  {id:'p6',cats:['all','yellow'],name:'Short Thali Kayiru — 18 inch',tamil:'குறுகிய தாலி கயிறு',brand:'Mangalyam · G. Anandan',type:'Compact · 18 inch · Natural Dye',badge:'NEW',bc:'g',imgs:['images/product1.png','images/product4.png'],emoji:'✨',retail:20,ws:10,wsMin:20,rating:4.7,reviews:67,specs:{Material:'Pure Cotton',Length:'18 inches',Dye:'Natural Haldi',Twist:'3-ply',Owner:'G. Anandan',Origin:'Poonamalle, Chennai'}},
+  {id:'p1',cats:['all','yellow'],name:'Classic Manjal Thali Kayiru',tamil:'கைவினை முறை மஞ்சள் தாலி கயிறு',brand:'Mangalyam · G. Anandan',type:'Natural Turmeric · Pure Cotton · 24 inch',badge:'BESTSELLER',bc:'m',imgs:['images/product1.jpg','images/product4.jpg'],emoji:'🟡',retail:22,ws:10,wsMin:20,rating:4.9,reviews:521,specs:{Material:'Pure Cotton',Length:'24 inches',Dye:'Natural Haldi',Twist:'3-ply',Owner:'G. Anandan',Origin:'Poonamalle, Chennai'}},
+  {id:'p2',cats:['all','bulk','wholesale'],name:'Bulk Bundle — 10 pcs',tamil:'10 நூல் தொகுப்பு',brand:'Mangalyam · G. Anandan',type:'Set of 10 · Ready Dispatch · Plastic Packed',badge:'BULK',bc:'g',imgs:['images/product2.jpg','images/product3.jpg'],emoji:'📦',retail:220,ws:100,wsMin:1,rating:4.8,reviews:342,specs:{Quantity:'10 pcs',Material:'Pure Cotton',Price:'₹22/pc retail',WSPrice:'₹11/pc wholesale',Dispatch:'Same day',Origin:'Poonamalle, Chennai'}},
+  {id:'p3',cats:['all','wholesale'],name:'Wholesale Pack — 50 pcs',tamil:'50 நூல் மொத்த தொகுப்பு',brand:'Mangalyam · G. Anandan',type:'50 pcs · Plastic Sealed · GST Invoice',badge:'WHOLESALE',bc:'m',imgs:['images/product3.jpg','images/product2.jpg'],emoji:'🏷️',retail:1100,ws:500,wsMin:1,rating:4.9,reviews:187,specs:{Quantity:'50 pcs',Price:'₹22/pc retail',WSPrice:'₹11/pc wholesale',GST:'Invoice incl.',Dispatch:'Priority 24hrs',Origin:'Poonamalle, Chennai'}},
+  {id:'p4',cats:['all','temple'],name:'Temple Grade Premium Kayiru',tamil:'கோவில் தர தாலி கயிறு',brand:'Mangalyam · G. Anandan',type:'Premium Cotton · Double Dyed · 24 inch',badge:'TEMPLE',bc:'m',imgs:['images/product4.jpg','images/product1.jpg'],emoji:'🛕',retail:25,ws:13,wsMin:20,rating:5.0,reviews:289,specs:{Material:'Premium Cotton',Length:'24 inches',Dye:'Double Haldi',Grade:'Temple Grade',Owner:'G. Anandan',Origin:'Poonamalle, Chennai'}},
+  {id:'p5',cats:['all','wholesale'],name:'Mega Pack — 100 pcs',tamil:'100 நூல் மொத்த விலை',brand:'Mangalyam · G. Anandan',type:'100 pcs · Factory Direct · Best Rate',badge:'BEST VALUE',bc:'g',imgs:['images/product3.jpg','images/product2.jpg'],emoji:'🏭',retail:2200,ws:1000,wsMin:1,rating:4.8,reviews:94,specs:{Quantity:'100 pcs',RetailRate:'₹22/pc',WSRate:'₹10/pc',Savings:'₹1,200 saved',Dispatch:'Priority',Origin:'Poonamalle, Chennai'}},
+  {id:'p6',cats:['all','yellow'],name:'Short Thali Kayiru — 18 inch',tamil:'குறுகிய தாலி கயிறு',brand:'Mangalyam · G. Anandan',type:'Compact · 18 inch · Natural Dye',badge:'NEW',bc:'g',imgs:['images/product1.jpg','images/product4.jpg'],emoji:'✨',retail:20,ws:10,wsMin:20,rating:4.7,reviews:67,specs:{Material:'Pure Cotton',Length:'18 inches',Dye:'Natural Haldi',Twist:'3-ply',Owner:'G. Anandan',Origin:'Poonamalle, Chennai'}},
 ];
 
 // ── App State ─────────────────────────────────────────────
@@ -221,12 +221,12 @@ function buildMod() {
         <div class="m-price-tile retail-tile">
           <div class="m-tile-label">🛍️ Retail</div>
           <div class="m-tile-price" id="mRPrice">${pRetail}</div>
-          <div class="m-tile-sub">₹20-₹25 per piece</div>
+          <div class="m-tile-sub">₹20–₹25 per piece</div>
         </div>
         <div class="m-price-tile ws-tile">
           <div class="m-tile-label">🏭 Wholesale</div>
           <div class="m-tile-price" id="mWPrice">${pWS}</div>
-          <div class="m-tile-sub">₹12–₹15 / piece (${p.wsMin}+ pcs)</div>
+          <div class="m-tile-sub">₹10–₹15 / piece (${p.wsMin}+ pcs)</div>
         </div>
       </div>
       <div class="m-ws-note">📞 Bulk: <strong>G. Anandan 9710835979</strong></div>
@@ -402,7 +402,7 @@ function openAddressForm() {
           </div>
         </div>
         <div style="background:var(--cream2);border-radius:5px;padding:.6rem .9rem;font-size:.75rem;color:var(--muted);margin-bottom:1rem;border:1px solid var(--border);">
-          💳 Payment Method:<br><div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.5rem;"><label style="display:flex;align-items:center;gap:.4rem;background:white;border:2px solid var(--gold);border-radius:6px;padding:.5rem .7rem;cursor:pointer;"><input type="radio" name="payMode" value="upi" checked> <span style="font-size:.78rem;font-weight:700;color:var(--maroon);">📱 UPI / QR Pay</span></label><label style="display:flex;align-items:center;gap:.4rem;background:white;border:1.5px solid var(--border);border-radius:6px;padding:.5rem .7rem;cursor:pointer;"><input type="radio" name="payMode" value="cod"> <span style="font-size:.78rem;font-weight:700;color:var(--muted);">💵 Cash on Delivery</span></label></div>
+          💳 Payment: <strong style="color:var(--maroon);">Cash on Delivery (COD)</strong> · Pay when you receive
         </div>
         <button onclick="submitOrder()" style="width:100%;background:linear-gradient(135deg,var(--maroon),var(--maroon2));color:white;border:none;padding:13px;border-radius:5px;font-family:'Lato',sans-serif;font-weight:700;font-size:.9rem;cursor:pointer;letter-spacing:.03em;">
           ✅ Confirm Order →
@@ -430,15 +430,6 @@ async function submitOrder() {
   const total = cart.reduce((s, i) => s + (i.retail * i.qty), 0);
   const grand = total >= 199 ? total : total + 40;
   const orderItems = cart.map(i => ({ productId: i.id, productName: i.name, qty: i.qty, unitPrice: i.retail, image: i.imgs && i.imgs[0] ? i.imgs[0] : '', emoji: i.emoji }));
-
-  const payMode = document.querySelector('input[name="payMode"]:checked')?.value || 'cod';
-  if (payMode === 'upi') {
-    const num = String(Date.now()).slice(-5);
-    const oid = 'MG-' + new Date().getFullYear() + '-' + num;
-    document.getElementById('addrModal').remove();
-    showUPIPayment(grand, oid, name, phone, city, street, pin, orderItems, total);
-    return;
-  }
 
   if (SERVER_UP) {
     showToast('⏳ Order placing...');
@@ -817,22 +808,16 @@ function showUPIPayment(grand, oid, name, phone, city, street, pin, orderItems, 
   modal.id = 'upiModal';
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(44,26,14,.7);z-index:99999;display:flex;align-items:center;justify-content:center;padding:1rem;';
   modal.innerHTML = `
-    <div style="background:white;border-radius:14px;max-width:380px;width:100%;padding:0;overflow:hidden;box-shadow:0 20px 60px rgba(44,26,14,.4);">
-      
-      <!-- Header -->
+    <div style="background:white;border-radius:14px;max-width:380px;width:100%;overflow:hidden;box-shadow:0 20px 60px rgba(44,26,14,.4);">
       <div style="background:linear-gradient(135deg,#4A0E0E,#6B1A1A);padding:1.2rem 1.5rem;text-align:center;">
         <div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:#FFD700;">📱 UPI Payment</div>
         <div style="font-size:.75rem;color:rgba(245,220,150,.7);margin-top:3px;">Scan & Pay · G. Anandan · Mangalyam Store</div>
       </div>
-
-      <!-- Amount -->
       <div style="background:#FFF8E1;padding:.8rem;text-align:center;border-bottom:1px solid #FFE082;">
         <div style="font-size:.7rem;color:#888;text-transform:uppercase;letter-spacing:.08em;">Total Amount</div>
         <div style="font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:700;color:#6B1A1A;">₹${grand.toLocaleString('en-IN')}</div>
         <div style="font-size:.72rem;color:#888;">Order ID: ${oid}</div>
       </div>
-
-      <!-- QR Code -->
       <div style="padding:1.2rem;text-align:center;">
         <div style="font-size:.75rem;color:#666;margin-bottom:.8rem;">📷 PhonePe / GPay / Paytm-ல் scan பண்ணுங்கள்</div>
         <div style="display:inline-block;padding:10px;border:3px solid #FFD700;border-radius:10px;background:white;">
@@ -842,23 +827,19 @@ function showUPIPayment(grand, oid, name, phone, city, street, pin, orderItems, 
           <div style="color:#666;margin-bottom:2px;">UPI ID</div>
           <div style="font-weight:700;color:#333;font-size:.9rem;">${upiId}</div>
         </div>
-        
-        <!-- App buttons -->
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;margin-top:.8rem;">
           <a href="${upiUrl}" style="background:#5f259f;color:white;padding:8px 4px;border-radius:8px;font-size:.7rem;font-weight:700;text-decoration:none;text-align:center;display:block;">📱 PhonePe</a>
           <a href="${upiUrl}" style="background:#1a73e8;color:white;padding:8px 4px;border-radius:8px;font-size:.7rem;font-weight:700;text-decoration:none;text-align:center;display:block;">💳 GPay</a>
           <a href="${upiUrl}" style="background:#002970;color:white;padding:8px 4px;border-radius:8px;font-size:.7rem;font-weight:700;text-decoration:none;text-align:center;display:block;">💙 Paytm</a>
         </div>
       </div>
-
-      <!-- Confirm buttons -->
       <div style="padding:.8rem 1.2rem 1.2rem;">
         <div style="font-size:.72rem;color:#888;text-align:center;margin-bottom:.7rem;">Payment பண்ணிட்டீர்களா?</div>
-        <button onclick="confirmUPIPayment('${oid}','${name}','${phone}','${city}','${street}','${pin}',${grand})" 
+        <button onclick="confirmUPIPayment('${oid}','${name}','${phone}','${city}','${street}','${pin}',${grand})"
           style="width:100%;background:linear-gradient(135deg,#2E7D32,#388E3C);color:white;border:none;padding:12px;border-radius:8px;font-family:'Lato',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;margin-bottom:.5rem;">
-          ✅ Payment பண்ணிட்டேன் — Order Confirm பண்ணுங்கள்
+          ✅ Payment பண்ணிட்டேன் — Order Confirm
         </button>
-        <button onclick="document.getElementById('upiModal').remove()" 
+        <button onclick="document.getElementById('upiModal').remove()"
           style="width:100%;background:#f5f5f5;color:#666;border:none;padding:10px;border-radius:8px;font-family:'Lato',sans-serif;font-weight:600;font-size:.82rem;cursor:pointer;">
           ← திரும்பி போ
         </button>
@@ -871,7 +852,6 @@ async function confirmUPIPayment(oid, name, phone, city, street, pin, grand) {
   document.getElementById('upiModal').remove();
   const orderItems = cart.map(i => ({ productId: i.id, productName: i.name, qty: i.qty, unitPrice: i.retail }));
   const total = cart.reduce((s, i) => s + (i.retail * i.qty), 0);
-
   if (SERVER_UP) {
     await apiFetch('/api/orders', {
       method: 'POST',
@@ -883,7 +863,6 @@ async function confirmUPIPayment(oid, name, phone, city, street, pin, grand) {
       }),
     });
   }
-
   closeCart();
   showOrderDetails(oid, name, phone, city, street, pin, orderItems, total, grand);
   cart = []; updCart();
