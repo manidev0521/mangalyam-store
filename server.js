@@ -1,54 +1,272 @@
-// server.js — Mangalyam Store · G. Anandan · Main Server
+// server.js — Mangalyam Store · G. Anandan · ALL-IN-ONE
 require('dotenv').config();
 
-const express     = require('express');
-const cors        = require('cors');
-const morgan      = require('morgan');
-const path        = require('path');
-const rateLimit   = require('express-rate-limit');
-const connectDB   = require('./config/db');
+const express    = require('express');
+const cors       = require('cors');
+const path       = require('path');
+const rateLimit  = require('express-rate-limit');
+const mongoose   = require('mongoose');
+const bcrypt     = require('bcryptjs');
+const jwt        = require('jsonwebtoken');
 
-// ── Connect Database ──────────────────────────────────────
-connectDB();
+// ══════════════════════════════════════════════════════════
+// DATABASE CONNECTION
+// ══════════════════════════════════════════════════════════
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('✅ MongoDB Connected'))
+  .catch(err => { console.error('❌ MongoDB Error:', err.message); process.exit(1); });
 
+// ══════════════════════════════════════════════════════════
+// MODELS
+// ══════════════════════════════════════════════════════════
+
+// User Model
+const userSchema = new mongoose.Schema({
+  name:        { type: String, required: true, trim: true },
+  phone:       { type: String, required: true, unique: true, trim: true },
+  city:        { type: String, default: '' },
+  password:    { type: String, required: true },
+  role:        { type: String, enum: ['customer','wholesale','admin'], default: 'customer' },
+  totalOrders: { type: Number, default: 0 },
+  totalSpent:  { type: Number, default: 0 },
+}, { timestamps: true });
+
+userSchema.pre('save', async function(next) {
+  if (!this.isModified('password')) return next();
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
+});
+userSchema.methods.matchPassword = async function(entered) {
+  return bcrypt.compare(entered, this.password);
+};
+const User = mongoose.model('User', userSchema);
+
+// Product Model
+const productSchema = new mongoose.Schema({
+  name:            { type: String, required: true },
+  tamilName:       { type: String, default: '' },
+  brand:           { type: String, default: 'Mangalyam · G. Anandan' },
+  type:            { type: String, default: '' },
+  categories:      [String],
+  badge:           { type: String, default: '' },
+  badgeColor:      { type: String, default: 'm' },
+  emoji:           { type: String, default: '🧵' },
+  images:          [String],
+  retailPrice:     { type: Number, required: true },
+  wholesalePrice:  { type: Number, required: true },
+  wholesaleMinQty: { type: Number, default: 20 },
+  rating:          { type: Number, default: 4.5 },
+  reviewCount:     { type: Number, default: 0 },
+  specs:           { type: Map, of: String },
+  stock:           { type: Number, default: 100 },
+  isActive:        { type: Boolean, default: true },
+}, { timestamps: true });
+const Product = mongoose.model('Product', productSchema);
+
+// Order Model
+const orderSchema = new mongoose.Schema({
+  orderId:      { type: String, unique: true },
+  user:         { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  customerName: { type: String, required: true },
+  phone:        { type: String, required: true },
+  address:      { type: String, default: '' },
+  city:         { type: String, default: '' },
+  items: [{
+    productId:   String,
+    productName: String,
+    qty:         Number,
+    unitPrice:   Number,
+    total:       Number,
+  }],
+  totalAmount: { type: Number, required: true },
+  status:      { type: String, enum: ['placed','confirmed','packed','out_for_delivery','delivered'], default: 'placed' },
+  timeline: [{
+    status:    String,
+    message:   String,
+    timestamp: { type: Date, default: Date.now },
+  }],
+}, { timestamps: true });
+
+orderSchema.pre('save', async function(next) {
+  if (!this.orderId) {
+    const count = await mongoose.model('Order').countDocuments();
+    this.orderId = `MG-${new Date().getFullYear()}-${String(count + 1).padStart(3, '0')}`;
+  }
+  next();
+});
+const Order = mongoose.model('Order', orderSchema);
+
+// ══════════════════════════════════════════════════════════
+// MIDDLEWARE HELPERS
+// ══════════════════════════════════════════════════════════
+const signToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET || 'mangalyam_secret', { expiresIn: '30d' });
+
+const protect = async (req, res, next) => {
+  let token;
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer'))
+    token = req.headers.authorization.split(' ')[1];
+  if (!token) return res.status(401).json({ success: false, message: 'Login செய்யவும்' });
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'mangalyam_secret');
+    req.user = await User.findById(decoded.id).select('-password');
+    next();
+  } catch {
+    return res.status(401).json({ success: false, message: 'Token invalid' });
+  }
+};
+
+const adminOnly = (req, res, next) => {
+  if (req.user && req.user.role === 'admin') return next();
+  return res.status(403).json({ success: false, message: 'Admin மட்டும்' });
+};
+
+// ══════════════════════════════════════════════════════════
+// EXPRESS APP
+// ══════════════════════════════════════════════════════════
 const app = express();
-
-// ── Middleware ────────────────────────────────────────────
 app.use(cors());
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true }));
 
-if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'));
-}
-
-// Rate limiting — prevent abuse
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200,
-  message: { success: false, message: 'Too many requests — சிறிது நேரம் கழித்து try செய்யவும்' },
-});
+const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 200 });
 app.use('/api/', limiter);
 
-// ── Static Files — Serve Frontend ─────────────────────────
-// Serves index.html, style.css, script.js from same folder
 app.use(express.static(path.join(__dirname)));
 
-// ── API Routes ────────────────────────────────────────────
-app.use('/api/auth',     require('./routes/auth'));
-app.use('/api/products', require('./routes/products'));
-app.use('/api/orders',   require('./routes/orders'));
-
-
-// ── Sitemap & Robots ──────────────────────────────────────
-app.get('/sitemap.xml', (req, res) => {
-  res.sendFile(path.join(__dirname, 'sitemap.xml'));
+// ══════════════════════════════════════════════════════════
+// AUTH ROUTES
+// ══════════════════════════════════════════════════════════
+app.post('/api/auth/register', async (req, res) => {
+  try {
+    const { name, phone, city, password } = req.body;
+    if (!name || !phone || !password)
+      return res.status(400).json({ success: false, message: 'பெயர், phone, password கொடுக்கவும்' });
+    if (await User.findOne({ phone }))
+      return res.status(400).json({ success: false, message: 'இந்த phone already registered' });
+    const user = await User.create({ name, phone, city, password });
+    res.status(201).json({ success: true, token: signToken(user._id), user: { id: user._id, name: user.name, phone: user.phone, role: user.role } });
+  } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 });
-app.get('/robots.txt', (req, res) => {
-  res.sendFile(path.join(__dirname, 'robots.txt'));
+
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { phone, password } = req.body;
+    if (!phone || !password)
+      return res.status(400).json({ success: false, message: 'Phone & password கொடுக்கவும்' });
+    const user = await User.findOne({ phone });
+    if (!user || !(await user.matchPassword(password)))
+      return res.status(401).json({ success: false, message: 'Phone அல்லது password தப்பு' });
+    res.json({ success: true, token: signToken(user._id), user: { id: user._id, name: user.name, phone: user.phone, role: user.role } });
+  } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 });
 
-// ── Health Check ──────────────────────────────────────────
+app.get('/api/auth/me', protect, (req, res) => {
+  res.json({ success: true, user: req.user });
+});
+
+// ══════════════════════════════════════════════════════════
+// PRODUCT ROUTES
+// ══════════════════════════════════════════════════════════
+app.get('/api/products', async (req, res) => {
+  try {
+    const filter = { isActive: true };
+    if (req.query.category && req.query.category !== 'all') filter.categories = req.query.category;
+    const products = await Product.find(filter);
+    res.json({ success: true, products });
+  } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+});
+
+app.get('/api/products/:id', async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ success: false, message: 'Product இல்லை' });
+    res.json({ success: true, product });
+  } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+});
+
+app.post('/api/products', protect, adminOnly, async (req, res) => {
+  try {
+    const product = await Product.create(req.body);
+    res.status(201).json({ success: true, product });
+  } catch (err) { res.status(400).json({ success: false, message: err.message }); }
+});
+
+app.put('/api/products/:id', protect, adminOnly, async (req, res) => {
+  try {
+    const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json({ success: true, product });
+  } catch (err) { res.status(400).json({ success: false, message: err.message }); }
+});
+
+app.delete('/api/products/:id', protect, adminOnly, async (req, res) => {
+  try {
+    await Product.findByIdAndUpdate(req.params.id, { isActive: false });
+    res.json({ success: true, message: 'Product removed' });
+  } catch (err) { res.status(400).json({ success: false, message: err.message }); }
+});
+
+// ══════════════════════════════════════════════════════════
+// ORDER ROUTES
+// ══════════════════════════════════════════════════════════
+app.post('/api/orders', async (req, res) => {
+  try {
+    const { customerName, phone, address, city, items, totalAmount } = req.body;
+    if (!customerName || !phone || !items || !totalAmount)
+      return res.status(400).json({ success: false, message: 'தேவையான details கொடுக்கவும்' });
+    const order = await Order.create({
+      customerName, phone, address, city, items, totalAmount,
+      user: req.user ? req.user._id : undefined,
+      timeline: [{ status: 'placed', message: 'G. Anandan உங்கள் order பெற்றார்' }],
+    });
+    res.status(201).json({ success: true, order });
+  } catch (err) { res.status(400).json({ success: false, message: err.message }); }
+});
+
+app.get('/api/orders/track/:orderId', async (req, res) => {
+  try {
+    const order = await Order.findOne({ orderId: req.params.orderId });
+    if (!order) return res.status(404).json({ success: false, message: 'Order கிடைக்கவில்லை' });
+    res.json({ success: true, order });
+  } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+});
+
+app.get('/api/orders/my', protect, async (req, res) => {
+  try {
+    const orders = await Order.find({ user: req.user._id }).sort('-createdAt');
+    res.json({ success: true, orders });
+  } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+});
+
+app.get('/api/orders', protect, adminOnly, async (req, res) => {
+  try {
+    const orders = await Order.find().sort('-createdAt');
+    res.json({ success: true, orders });
+  } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+});
+
+app.patch('/api/orders/:id/status', protect, adminOnly, async (req, res) => {
+  try {
+    const { status, message } = req.body;
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ success: false, message: 'Order இல்லை' });
+    order.status = status;
+    order.timeline.push({ status, message: message || `Status: ${status}` });
+    await order.save();
+    res.json({ success: true, order });
+  } catch (err) { res.status(400).json({ success: false, message: err.message }); }
+});
+
+app.get('/api/orders/stats/summary', protect, adminOnly, async (req, res) => {
+  try {
+    const total   = await Order.countDocuments();
+    const revenue = await Order.aggregate([{ $group: { _id: null, sum: { $sum: '$totalAmount' } } }]);
+    res.json({ success: true, totalOrders: total, totalRevenue: revenue[0]?.sum || 0 });
+  } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+});
+
+// ══════════════════════════════════════════════════════════
+// HEALTH CHECK
+// ══════════════════════════════════════════════════════════
 app.get('/api/health', (req, res) => {
   res.json({
     success: true,
@@ -59,33 +277,32 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// ── Serve Frontend for all non-API routes ─────────────────
+app.get('/sitemap.xml', (req, res) => res.sendFile(path.join(__dirname, 'sitemap.xml')));
+app.get('/robots.txt',  (req, res) => res.sendFile(path.join(__dirname, 'robots.txt')));
+
 app.get('*', (req, res) => {
   if (!req.path.startsWith('/api')) {
     res.sendFile(path.join(__dirname, 'index.html'));
   } else {
-    res.status(404).json({ success: false, message: 'API route கிடைக்கவில்லை' });
+    res.status(404).json({ success: false, message: 'API route இல்லை' });
   }
 });
 
-// ── Global Error Handler ──────────────────────────────────
 app.use((err, req, res, next) => {
   console.error('💥 Error:', err.message);
-  res.status(err.statusCode || 500).json({
-    success: false,
-    message: err.message || 'Server error — மீண்டும் try செய்யவும்',
-  });
+  res.status(err.statusCode || 500).json({ success: false, message: err.message || 'Server error' });
 });
 
-// ── Start Server ──────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+// START
+// ══════════════════════════════════════════════════════════
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log('');
   console.log('╔══════════════════════════════════════════════════╗');
   console.log('║     🌸  MANGALYAM STORE — SERVER STARTED  🌸     ║');
   console.log('╠══════════════════════════════════════════════════╣');
-  console.log(`║  🚀  http://localhost:${PORT}                        ║`);
-  console.log(`║  📦  API: http://localhost:${PORT}/api/health         ║`);
+  console.log(`║  🚀  Port: ${PORT}                                   ║`);
   console.log(`║  👨‍💼  Owner: G. Anandan · Poonamalle, Chennai    ║`);
   console.log(`║  📞  9710835979 | 7305775184                     ║`);
   console.log('╚══════════════════════════════════════════════════╝');
