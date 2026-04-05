@@ -401,8 +401,18 @@ function openAddressForm() {
             <input id="aPin" type="text" placeholder="6-digit pincode" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:5px;font-family:'Lato',sans-serif;font-size:.85rem;background:var(--cream2);outline:none;">
           </div>
         </div>
-        <div style="background:var(--cream2);border-radius:5px;padding:.6rem .9rem;font-size:.75rem;color:var(--muted);margin-bottom:1rem;border:1px solid var(--border);">
-          💳 Payment: <strong style="color:var(--maroon);">Cash on Delivery (COD)</strong> · Pay when you receive
+        <div style="margin-bottom:1rem;">
+          <div style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem;">💳 Payment Method</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;">
+            <label style="display:flex;align-items:center;gap:.5rem;background:white;border:2px solid var(--gold);border-radius:8px;padding:.6rem .8rem;cursor:pointer;">
+              <input type="radio" name="payMode" value="upi" checked style="accent-color:#6B1A1A;">
+              <span style="font-size:.8rem;font-weight:700;color:var(--maroon);">📱 UPI / QR Pay</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:.5rem;background:white;border:1.5px solid var(--border);border-radius:8px;padding:.6rem .8rem;cursor:pointer;">
+              <input type="radio" name="payMode" value="cod" style="accent-color:#6B1A1A;">
+              <span style="font-size:.8rem;font-weight:700;color:var(--muted);">💵 Cash on Delivery</span>
+            </label>
+          </div>
         </div>
         <button onclick="submitOrder()" style="width:100%;background:linear-gradient(135deg,var(--maroon),var(--maroon2));color:white;border:none;padding:13px;border-radius:5px;font-family:'Lato',sans-serif;font-weight:700;font-size:.9rem;cursor:pointer;letter-spacing:.03em;">
           ✅ Confirm Order →
@@ -430,6 +440,15 @@ async function submitOrder() {
   const total = cart.reduce((s, i) => s + (i.retail * i.qty), 0);
   const grand = total >= 199 ? total : total + 40;
   const orderItems = cart.map(i => ({ productId: i.id, productName: i.name, qty: i.qty, unitPrice: i.retail, image: i.imgs && i.imgs[0] ? i.imgs[0] : '', emoji: i.emoji }));
+
+  const payMode = document.querySelector('input[name="payMode"]:checked')?.value || 'upi';
+  if (payMode === 'upi') {
+    const num = String(Date.now()).slice(-5);
+    const oid = 'MG-' + new Date().getFullYear() + '-' + num;
+    document.getElementById('addrModal').remove();
+    showUPIPayment(grand, oid, name, phone, city, street, pin, orderItems, total);
+    return;
+  }
 
   if (SERVER_UP) {
     showToast('⏳ Order placing...');
