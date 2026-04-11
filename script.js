@@ -15,6 +15,15 @@ const FALLBACK_PRODS = [
   {id:'p6',cats:['all','yellow'],name:'Short Thali Kayiru — 18 inch',tamil:'குறுகிய தாலி கயிறு',brand:'Mangalyam · G. Anandan',type:'Compact · 18 inch · Natural Dye',badge:'NEW',bc:'g',imgs:['images/product1.jpg','images/product4.jpg'],emoji:'✨',retail:20,ws:10,wsMin:20,rating:4.7,reviews:67,specs:{Material:'Pure Cotton',Length:'18 inches',Dye:'Natural Haldi',Twist:'3-ply',Owner:'G. Anandan',Origin:'Poonamalle, Chennai'}},
 ];
 
+
+// ══ PRICE HELPER — Wholesale if qty >= wsMin ══════════════
+function getPrice(item) {
+  return item.qty >= item.wsMin ? item.ws : item.retail;
+}
+function getPriceLabel(item) {
+  return item.qty >= item.wsMin ? '🏷️ Wholesale' : '🛍️ Retail';
+}
+
 // ── App State ─────────────────────────────────────────────
 let PRODS       = [];
 let cart        = [];
@@ -292,7 +301,7 @@ function chCQ(id, d) {
 function rmC(id) { cart = cart.filter(x => x.id !== id); updCart(); }
 
 function updCart() {
-  const total = cart.reduce((s, i) => s + (i.retail * i.qty), 0);
+  const total = cart.reduce((s, i) => s + (getPrice(i) * i.qty), 0);
   document.getElementById('cartCount').textContent = cart.reduce((s, i) => s + i.qty, 0);
   const body = document.getElementById('cartBody');
   if (!cart.length) {
@@ -310,7 +319,7 @@ function updCart() {
       </div>
       <div style="flex:1">
         <div class="c-name">${i.name}</div>
-        <div class="c-price">₹${(i.retail * i.qty).toLocaleString('en-IN')}</div>
+        <div class="c-price">₹${(getPrice(i) * i.qty).toLocaleString('en-IN')}</div>
         <div class="c-range">₹${i.retail}/pc · WS ₹${i.ws}/pc</div>
         <div class="c-ctrl">
           <button class="c-btn" onclick="chCQ('${i.id}',-1)">−</button>
@@ -334,7 +343,7 @@ function placeOrder() {
 function openAddressForm() {
   const existing = document.getElementById('addrModal');
   if (existing) existing.remove();
-  const total = cart.reduce((s, i) => s + (i.retail * i.qty), 0);
+  const total = cart.reduce((s, i) => s + (getPrice(i) * i.qty), 0);
   const del   = total >= 199 ? 'FREE' : '₹40';
   const grand = total >= 199 ? total : total + 40;
   const preName  = currentUser ? currentUser.name  : '';
@@ -368,7 +377,7 @@ function openAddressForm() {
               <div style="font-size:.78rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${i.name}</div>
               <div style="font-size:.7rem;color:var(--muted);">Qty: ${i.qty} × ₹${i.retail}</div>
             </div>
-            <div style="font-size:.85rem;font-weight:700;color:var(--maroon);flex-shrink:0;">₹${(i.retail * i.qty).toLocaleString('en-IN')}</div>
+            <div style="font-size:.85rem;font-weight:700;color:var(--maroon);flex-shrink:0;">₹${(getPrice(i) * i.qty).toLocaleString('en-IN')}</div>
           </div>`).join('')}
         <div style="display:flex;justify-content:space-between;padding:.4rem 0 0;font-size:.78rem;">
           <span style="color:var(--muted);">Subtotal</span><span style="font-weight:700;">₹${total.toLocaleString('en-IN')}</span>
@@ -437,7 +446,7 @@ async function submitOrder() {
   if (!street) { showToast('Address கொடுக்கவும்'); return; }
   if (!city)   { showToast('City கொடுக்கவும்'); return; }
 
-  const total = cart.reduce((s, i) => s + (i.retail * i.qty), 0);
+  const total = cart.reduce((s, i) => s + (getPrice(i) * i.qty), 0);
   const grand = total >= 199 ? total : total + 40;
   const orderItems = cart.map(i => ({ productId: i.id, productName: i.name, qty: i.qty, unitPrice: i.retail, image: i.imgs && i.imgs[0] ? i.imgs[0] : '', emoji: i.emoji }));
 
@@ -620,8 +629,8 @@ function showOrderDetails(oid, name, phone, city, street, pin, items, subtotal, 
 function closeSuc() { document.getElementById('sucMod').classList.remove('open'); }
 
 function waCart() {
-  const items = cart.map(i => `${i.name} x${i.qty}=₹${(i.retail * i.qty).toLocaleString('en-IN')}`).join('%0A');
-  const total = cart.reduce((s, i) => s + (i.retail * i.qty), 0);
+  const items = cart.map(i => `${i.name} x${i.qty}=₹${(getPrice(i) * i.qty).toLocaleString('en-IN')}`).join('%0A');
+  const total = cart.reduce((s, i) => s + (getPrice(i) * i.qty), 0);
   window.open(`https://wa.me/919710835979?text=Hi%20G.%20Anandan%2C%20Order:%0A${items}%0ATotal:%20₹${total.toLocaleString('en-IN')}`, '_blank');
 }
 
@@ -870,7 +879,7 @@ function showUPIPayment(grand, oid, name, phone, city, street, pin, orderItems, 
 async function confirmUPIPayment(oid, name, phone, city, street, pin, grand) {
   document.getElementById('upiModal').remove();
   const orderItems = cart.map(i => ({ productId: i.id, productName: i.name, qty: i.qty, unitPrice: i.retail }));
-  const total = cart.reduce((s, i) => s + (i.retail * i.qty), 0);
+  const total = cart.reduce((s, i) => s + (getPrice(i) * i.qty), 0);
   if (SERVER_UP) {
     await apiFetch('/api/orders', {
       method: 'POST',
