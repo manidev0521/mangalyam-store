@@ -154,16 +154,7 @@ function renderGrid(gid, list) {
           <div class="p-price-range">Retail: ₹20–₹25/pc · Premium: ₹40/pc</div>
           <div class="p-ws-price">Wholesale: <span>${wsStr}/pc</span> (${p.wsMin}+ pcs)</div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem;margin-top:.3rem;">
-          <button class="btn-add" style="background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--maroon3);" 
-            onclick="event.stopPropagation();addCWithPrice('${p.id}',1,'retail')">
-            🛍️ Retail
-          </button>
-          <button class="btn-add" style="background:linear-gradient(135deg,#2E7D32,#388E3C);color:white;" 
-            onclick="event.stopPropagation();addCWithPrice('${p.id}',${p.wsMin},'wholesale')">
-            🏷️ Wholesale
-          </button>
-        </div>
+        <button class="btn-add" onclick="event.stopPropagation();showPriceSelect('${p.id}')">🛒 Add to Cart</button>
       </div>
     </div>`;
   }).join('');
@@ -290,6 +281,58 @@ function chMQ(d) {
 }
 
 // ══ CART ══════════════════════════════════════════════════
+function showPriceSelect(id) {
+  const p = PRODS.find(x => x.id === id) || FALLBACK_PRODS.find(x => x.id === id);
+  if (!p) return;
+
+  // Remove existing popup
+  const existing = document.getElementById('priceSelectPop');
+  if (existing) existing.remove();
+
+  const isMulti = p.retail > 100;
+  const retailPrice = isMulti ? '₹' + p.retail.toLocaleString('en-IN') : '₹' + p.retail + '/pc';
+  const wsPrice     = isMulti ? '₹' + p.ws.toLocaleString('en-IN')     : '₹' + p.ws + '/pc';
+
+  const popup = document.createElement('div');
+  popup.id = 'priceSelectPop';
+  popup.style.cssText = 'position:fixed;inset:0;background:rgba(44,26,14,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;';
+  popup.innerHTML = `
+    <div style="background:var(--white);border-radius:14px;max-width:340px;width:100%;overflow:hidden;box-shadow:0 20px 60px rgba(44,26,14,.35);">
+      
+      <div style="background:linear-gradient(135deg,var(--maroon3),var(--maroon));padding:1rem 1.5rem;display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:white;">Select Price Type</div>
+          <div style="font-size:.72rem;color:var(--gold2);margin-top:2px;">${p.name}</div>
+        </div>
+        <button onclick="document.getElementById('priceSelectPop').remove()" 
+          style="background:rgba(255,255,255,.15);border:none;color:white;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:1rem;">✕</button>
+      </div>
+
+      <div style="padding:1.2rem;display:flex;flex-direction:column;gap:.7rem;">
+        
+        <button onclick="addCWithPrice('${p.id}',1,'retail');document.getElementById('priceSelectPop').remove();"
+          style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.2rem;background:#FFF8E1;border:2px solid var(--gold);border-radius:10px;cursor:pointer;width:100%;text-align:left;">
+          <div>
+            <div style="font-size:.8rem;font-weight:700;color:var(--maroon);margin-bottom:2px;">🛍️ Retail Price</div>
+            <div style="font-size:.72rem;color:var(--muted);">1 piece — anyone can buy</div>
+          </div>
+          <div style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--maroon);">${retailPrice}</div>
+        </button>
+
+        <button onclick="addCWithPrice('${p.id}',${p.wsMin},'wholesale');document.getElementById('priceSelectPop').remove();"
+          style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.2rem;background:#E8F5E9;border:2px solid #A5D6A7;border-radius:10px;cursor:pointer;width:100%;text-align:left;">
+          <div>
+            <div style="font-size:.8rem;font-weight:700;color:#2E7D32;margin-bottom:2px;">🏷️ Wholesale Price</div>
+            <div style="font-size:.72rem;color:var(--muted);">Min ${p.wsMin} pcs — bulk rate</div>
+          </div>
+          <div style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:#2E7D32;">${wsPrice}</div>
+        </button>
+
+      </div>
+    </div>`;
+  document.body.appendChild(popup);
+}
+
 function addCWithPrice(id, qty, priceType) {
   const p = PRODS.find(x => x.id === id) || FALLBACK_PRODS.find(x => x.id === id);
   if (!p) return;
