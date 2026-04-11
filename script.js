@@ -154,7 +154,16 @@ function renderGrid(gid, list) {
           <div class="p-price-range">Retail: ₹20–₹25/pc · Premium: ₹40/pc</div>
           <div class="p-ws-price">Wholesale: <span>${wsStr}/pc</span> (${p.wsMin}+ pcs)</div>
         </div>
-        <button class="btn-add" onclick="event.stopPropagation();addC('${p.id}',1)">🛒 Add to Cart</button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem;margin-top:.3rem;">
+          <button class="btn-add" style="background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--maroon3);" 
+            onclick="event.stopPropagation();addCWithPrice('${p.id}',1,'retail')">
+            🛍️ Retail
+          </button>
+          <button class="btn-add" style="background:linear-gradient(135deg,#2E7D32,#388E3C);color:white;" 
+            onclick="event.stopPropagation();addCWithPrice('${p.id}',${p.wsMin},'wholesale')">
+            🏷️ Wholesale
+          </button>
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -281,6 +290,21 @@ function chMQ(d) {
 }
 
 // ══ CART ══════════════════════════════════════════════════
+function addCWithPrice(id, qty, priceType) {
+  const p = PRODS.find(x => x.id === id) || FALLBACK_PRODS.find(x => x.id === id);
+  if (!p) return;
+  const price = priceType === 'wholesale' ? p.ws : p.retail;
+  const label = priceType === 'wholesale' ? '🏷️ Wholesale' : '🛍️ Retail';
+  const ex = cart.find(x => x.id === id + '_' + priceType);
+  if (ex) {
+    ex.qty += qty;
+  } else {
+    cart.push({ ...p, id: id + '_' + priceType, origId: id, qty, retail: price, priceType, priceLabel: label });
+  }
+  updCart();
+  showToast(label + ' — ' + p.name + ' cart-ல் சேர்க்கப்பட்டது! ✅');
+}
+
 function addC(id, qty) {
   const p = PRODS.find(x => x.id === id) || FALLBACK_PRODS.find(x => x.id === id);
   if (!p) return;
@@ -320,8 +344,9 @@ function updCart() {
       </div>
       <div style="flex:1">
         <div class="c-name">${i.name}</div>
-        <div class="c-price">₹${(getPrice(i) * i.qty).toLocaleString('en-IN')}</div>
-        <div class="c-range">₹${i.retail}/pc · WS ₹${i.ws}/pc</div>
+        ${i.priceLabel ? `<div style="font-size:.62rem;font-weight:700;color:${i.priceType==='wholesale'?'#2E7D32':'#8B6B4A'};margin-bottom:2px;">${i.priceLabel}</div>` : ''}
+        <div class="c-price">₹${(i.retail * i.qty).toLocaleString('en-IN')}</div>
+        <div class="c-range">₹${i.retail}/pc</div>
         <div class="c-ctrl">
           <button class="c-btn" onclick="chCQ('${i.id}',-1)">−</button>
           <span class="c-n">${i.qty}</span>
